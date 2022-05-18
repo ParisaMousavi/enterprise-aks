@@ -59,6 +59,20 @@ output "iden_output" {
   value = module.identity
 }
 
+module "dns_zone" {
+  for_each = toset(local.repetation)
+  source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-dns-zones?ref=main"
+  resource_group_name     = module.resourcegroup[each.value].name
+  resource_group_location = module.resourcegroup[each.value].location
+  private_zones = toset([
+    "privatelink.westeurope.azmk8s.io",
+  ]) 
+}
+
+output "dns_zone_output" {
+  value = module.dns_zone
+}
+
 
 # module "aks" {
 #   for_each = toset(local.repetation)
