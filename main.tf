@@ -1,13 +1,13 @@
 locals {
-  repetation = ["dummyaks"]
+  repetation   = ["dummyaks"]
   subscription = "dev"
   region_short = "we"
-  environment = "dev"
+  environment  = "dev"
 }
 
 module "resourcegroup" {
   for_each = toset(local.repetation)
-  source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-resourcegroup?ref=main"
+  source   = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-resourcegroup?ref=main"
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
 
   region             = "westeurope"
@@ -33,8 +33,14 @@ output "rg_output" {
 
 
 module "identity" {
-  source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-managed-identity?ref=main"
-  
+  source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-managed-identity?ref=main"
+  resource_group_name     = module.resourcegroup.name
+  resource_group_location = module.resourcegroup.location
+  resource_group_id       = module.resourcegroup.id
+  identity_names = [
+    "consul",
+    "vault",
+  ]
 }
 
 # module "aks" {
