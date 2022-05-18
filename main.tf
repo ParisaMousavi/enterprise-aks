@@ -33,15 +33,21 @@ output "rg_output" {
 
 
 module "identity" {
+  for_each = toset(local.repetation)
   source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-managed-identity?ref=main"
-  resource_group_name     = module.resourcegroup.name
-  resource_group_location = module.resourcegroup.location
-  resource_group_id       = module.resourcegroup.id
+  resource_group_name     = module.resourcegroup[each.value].name
+  resource_group_location = module.resourcegroup[each.value].location
+  resource_long_name      = each.value
   identity_names = [
     "consul",
     "vault",
   ]
 }
+
+output "iden_output" {
+  value = module.identity
+}
+
 
 # module "aks" {
 #   source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks?ref=main"
