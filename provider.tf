@@ -1,0 +1,7 @@
+terraform {
+
+}
+
+provider "azurerm" {
+  features {}
+}
