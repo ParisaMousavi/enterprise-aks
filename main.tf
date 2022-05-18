@@ -11,7 +11,7 @@ module "resourcegroup" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
 
   region             = "westeurope"
-  resource_long_name = "network-${each.value}"
+  resource_long_name = each.value
   tags = {
     Service         = "network"
     AssetName       = "Asset Name"
@@ -27,14 +27,22 @@ module "resourcegroup" {
 
 }
 
+output "rg_output" {
+  value = module.resourcegroup
+}
 
+
+module "identity" {
+  source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-managed-identity?ref=main"
+  
+}
 
 # module "aks" {
 #   source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks?ref=main"
 
-#   resource_group_name                 = dependency.resource_group.outputs.name
-#   resource_group_location             = dependency.resource_group.outputs.location
-#   resource_group_id                   = dependency.resource_group.outputs.id
+#   resource_group_name                 = module.resourcegroup.name
+#   resource_group_location             = module.resourcegroup.location
+#   resource_group_id                   = module.resourcegroup.id
 #   kubernetes_version                  = "1.19.11"
 #   aks_cluster_identity_id             = dependency.identities.outputs.identities["aks-cluster"].id
 #   subnets                             = dependency.vnet.outputs.subnets
@@ -71,15 +79,6 @@ module "resourcegroup" {
 # }
 
 
-# dependency "resource_group" {
-#   config_path                             = "${dirname(find_in_parent_folders("service.hcl"))}/resourcegroup"
-#   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-#   mock_outputs = {
-#     id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-name"
-#     name     = "mock-name"
-#     location = "southindia"
-#   }
-# }
 
 # dependency "dns_zones" {
 #   config_path                             = "${get_parent_terragrunt_dir()}/dev/west-europe/dev/dns/zones/privatezones"
