@@ -39,9 +39,20 @@ module "identity" {
   resource_group_location = module.resourcegroup[each.value].location
   resource_long_name      = each.value
   identity_names = [
-    "consul",
-    "vault",
+    "aks-cluster",
   ]
+  tags = {
+    Service         = "network"
+    AssetName       = "Asset Name"
+    AssetID         = "AB00CD"
+    BusinessUnit    = "Network Team"
+    Confidentiality = "C1"
+    Integrity       = "I1"
+    Availability    = "A1"
+    Criticality     = "Low"
+    Owner           = "parisamoosavinezhad@hotmail.com"
+    CostCenter      = ""
+  }  
 }
 
 output "iden_output" {
@@ -50,13 +61,14 @@ output "iden_output" {
 
 
 # module "aks" {
+#   for_each = toset(local.repetation)
 #   source = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks?ref=main"
 
-#   resource_group_name                 = module.resourcegroup.name
-#   resource_group_location             = module.resourcegroup.location
-#   resource_group_id                   = module.resourcegroup.id
+#   resource_group_name                 = module.resourcegroup[each.value].name
+#   resource_group_location             = module.resourcegroup[each.value].location
+#   resource_group_id                   = module.resourcegroup[each.value].id
 #   kubernetes_version                  = "1.19.11"
-#   aks_cluster_identity_id             = dependency.identities.outputs.identities["aks-cluster"].id
+#   aks_cluster_identity_id             = dependency.identity[each.value].identities["aks-cluster"].id
 #   subnets                             = dependency.vnet.outputs.subnets
 #   privatelink_private_zone_id         = dependency.dns_zones.outputs.private_zone_ids["privatelink.westeurope.azmk8s.io"]
 #   disk_encryption_set_id              = dependency.disk_encryption_set.outputs.disk_encryption_set_id
@@ -119,18 +131,6 @@ output "iden_output" {
 # }
 
 
-# dependency "identities" {
-#   config_path                             = "${dirname(find_in_parent_folders("service.hcl"))}/identities"
-#   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
-#   mock_outputs = {
-#     identities = {
-#       aks-cluster = {
-#         id           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-name/providers/Microsoft.ManagedIdentity/userAssignedIdentities/mock-name"
-#         principal_id = "0000-deadbeef-2face-0000"
-#       }
-#     }
-#   }
-# }
 
 # dependency "event_hub_observability" {
 #   config_path                             = "${dirname(find_in_parent_folders("product.hcl"))}/observability/eventhub/application-eventhub"
