@@ -95,7 +95,7 @@ module "aks" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  principal_id                     = module.aks_m_id.principal_id
+  principal_id                     = module.aks.principal_id
   role_definition_name             = "AcrPull"
   scope                            = module.acr.id
   skip_service_principal_aad_check = true

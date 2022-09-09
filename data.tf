@@ -7,7 +7,3 @@ data "terraform_remote_state" "network" {
     key                  = "terraform.tfstate"
   }
 }
-
-output "network" {
-  value = data.terraform_remote_state.network
-}
