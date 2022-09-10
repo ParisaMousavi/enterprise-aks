@@ -1,0 +1,19 @@
+#ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cna-express
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: cna-express.<exampleURL.eastus.aksapp.io>
+    http:
+      paths:
+      - path: / # Which path is this rule referring to
+        pathType: Prefix
+        backend: # How the ingress will handle the requests
+          service:
+            name: cna-express # Which service the request will be forwarded to
+            port: 
+              name: http # Which port in that service

@@ -44,6 +44,7 @@ module "acr" {
   additional_tags     = {}
 }
 
+
 module "aks_m_id_name" {
   source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//mid?ref=main"
   prefix             = var.prefix
@@ -135,12 +136,22 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   ]
 }
 
-resource "null_resource" "run_vote_app" {
+# resource "null_resource" "run_vote_app" {
+#   depends_on = [module.aks]
+#   triggers   = { always_run = timestamp() }
+#   // The order of input values are important for bash
+#   provisioner "local-exec" {
+#     command     = "chmod +x ${path.module}/bash-vote.sh ;${path.module}/bash-vote.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
+
+resource "null_resource" "run_cna_express_app" {
   depends_on = [module.aks]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
   provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/bash-vote.sh ;${path.module}/bash-vote.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    command     = "chmod +x ${path.module}/cna-express/bash-cna-express.sh ;${path.module}/cna-express/bash-cna-express.sh ${module.acr_name.result} ${module.aks_name.result}  ${module.resourcegroup.name}"
     interpreter = ["bash", "-c"]
   }
 }
