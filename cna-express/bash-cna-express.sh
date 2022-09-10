@@ -5,17 +5,17 @@ RESOURCEGROUP=$3
 
 # git clone https://github.com/MicrosoftDocs/mslearn-cloud-native-apps-express.git
 
-# cd mslearn-cloud-native-apps-express/src
+cd mslearn-cloud-native-apps-express/src
 
-# az acr build --registry $REGISTRYNAME --image expressimage .
+az acr build --registry $REGISTRYNAME --image expressimage .
 
-# cd ..
+cd ..
 
-# #Build the management app Docker Image
+#Build the management app Docker Image
 
-# cd react/
+cd react/
 
-# az acr build --registry $REGISTRYNAME --image webimage .
+az acr build --registry $REGISTRYNAME --image webimage .
 
 # az aks get-credentials --resource-group $RESOURCEGROUP --name $CLUSTERNAME
 
@@ -28,14 +28,30 @@ RESOURCEGROUP=$3
 # cd ..
 # cd ..
 
-kubectl apply -f ./cna-express/deployment.yaml
+# kubectl apply -f ./cna-express/deployment.yaml
 
-kubectl get deploy cna-express
+# kubectl get deploy cna-express
 
-kubectl get pods
+# kubectl get pods
 
-kubectl apply -f ./cna-express/service.yaml
+# kubectl apply -f ./cna-express/service.yaml
 
-kubectl get service cna-express
+# kubectl get service cna-express
 
-az aks show --resource-group "projn-rg-app-dev-gwc" --name "projn-aks-app-dev-gwc" -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
+# # Identify the fully qualified domain name (FQDN) of the host allowed access to the cluster.
+
+# az aks show --resource-group $RESOURCEGROUP --name $CLUSTERNAME -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
+
+# # Deploy the ingress
+
+# kubectl apply -f ./cna-express/ingress.yaml
+
+# # Make sure the ADDRESS column of the output is filled with an IP address. That's the address of your cluster.
+
+# kubectl get ingress cna-express
+
+# # query Azure to find out if our DNS has been created and we can access the website container
+
+# az network dns zone list --output table
+
+# az network dns record-set list -g projn-rg-aks-node-dev-gwc -z 69b1c43028a1489ea348.germanywestcentral.aksapp.io --output table

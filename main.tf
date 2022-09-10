@@ -146,12 +146,12 @@ resource "azurerm_role_assignment" "aks_node_rg" {
 #   }
 # }
 
-resource "null_resource" "run_cna_express_app" {
-  depends_on = [module.aks]
-  triggers   = { always_run = timestamp() }
-  // The order of input values are important for bash
-  provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/cna-express/bash-cna-express.sh ;${path.module}/cna-express/bash-cna-express.sh ${module.acr_name.result} ${module.aks_name.result}  ${module.resourcegroup.name}"
-    interpreter = ["bash", "-c"]
-  }
-}
+# resource "null_resource" "run_cna_express_app" {
+#   depends_on = [module.aks]
+#   triggers   = { always_run = timestamp() }
+#   // The order of input values are important for bash
+#   provisioner "local-exec" {
+#     command     = "chmod +x ${path.module}/cna-express/bash-cna-express.sh ;${path.module}/cna-express/bash-cna-express.sh ${module.acr_name.result} ${module.aks_name.result}  ${module.resourcegroup.name}"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
