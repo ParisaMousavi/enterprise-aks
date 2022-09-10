@@ -69,16 +69,34 @@ module "aks_name" {
   location_shortname = var.location_shortname
 }
 
+module "aks_node_rg_name" {
+  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//rg?ref=main"
+  prefix             = var.prefix
+  name               = "aks-node"
+  stage              = var.stage
+  location_shortname = var.location_shortname
+}
+
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
   source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-v2?ref=main"
   resource_group_name     = module.resourcegroup.name
+  node_resource_group     = module.aks_node_rg_name.result
   location                = module.resourcegroup.location
   name                    = module.aks_name.result
   dns_prefix              = "${var.stage}-${var.prefix}-${var.name}"
   kubernetes_version      = "1.23.8"
   private_cluster_enabled = false
-  identity_ids = [module.aks_m_id.id]
+  identity_ids            = [module.aks_m_id.id]
+  network_profile = {
+    network_plugin     = "azure"
+    network_policy     = "azure"
+    docker_bridge_cidr = "10.50.0.1/18"
+    service_cidr       = "10.50.64.0/18"
+    dns_service_ip     = "10.50.64.10"
+    load_balancer_sku  = "standard"
+    outbound_type      = "loadBalancer"
+  }
   default_node_pool = {
     enable_auto_scaling = true
     node_count          = 1
@@ -99,4 +117,20 @@ resource "azurerm_role_assignment" "this" {
   role_definition_name             = "AcrPull"
   scope                            = module.acr.id
   skip_service_principal_aad_check = true
+}
+
+data "azurerm_resource_group" "aks_node_rg" {
+  name = module.aks_node_rg_name.result
+  depends_on = [
+    module.aks
+  ]
+}
+
+resource "azurerm_role_assignment" "aks_node_rg" {
+  principal_id         = module.aks.principal_id
+  scope                = data.azurerm_resource_group.aks_node_rg.id
+  role_definition_name = "Virtual Machine Contributor"
+  depends_on = [
+    module.aks
+  ]
 }
