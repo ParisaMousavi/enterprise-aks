@@ -80,15 +80,16 @@ module "aks_node_rg_name" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-v2?ref=main"
-  resource_group_name     = module.resourcegroup.name
-  node_resource_group     = module.aks_node_rg_name.result
-  location                = module.resourcegroup.location
-  name                    = module.aks_name.result
-  dns_prefix              = "${var.stage}-${var.prefix}-${var.name}"
-  kubernetes_version      = "1.23.8"
-  private_cluster_enabled = false
-  identity_ids            = [module.aks_m_id.id]
+  source                     = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-v2?ref=main"
+  resource_group_name        = module.resourcegroup.name
+  node_resource_group        = module.aks_node_rg_name.result
+  location                   = module.resourcegroup.location
+  name                       = module.aks_name.result
+  dns_prefix                 = "${var.stage}-${var.prefix}-${var.name}"
+  kubernetes_version         = "1.23.8"
+  private_cluster_enabled    = false
+  log_analytics_workspace_id = data.terraform_remote_state.monitoring.log_analytics_workspace_id
+  identity_ids               = [module.aks_m_id.id]
   network_profile = {
     network_plugin     = "azure"
     network_policy     = "azure"
