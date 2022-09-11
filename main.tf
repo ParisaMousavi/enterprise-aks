@@ -136,6 +136,16 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   ]
 }
 
+resource "null_resource" "aks_arc" {
+  depends_on = [module.aks]
+  triggers   = { always_run = timestamp() }
+  // The order of input values are important for bash
+  provisioner "local-exec" {
+    command     = "chmod +x ${path.module}/bash-arc.sh ;${path.module}/bash-arc.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    interpreter = ["bash", "-c"]
+  }
+}
+
 # resource "null_resource" "run_vote_app" {
 #   depends_on = [module.aks]
 #   triggers   = { always_run = timestamp() }
