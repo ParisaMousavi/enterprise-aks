@@ -88,7 +88,7 @@ module "aks" {
   dns_prefix                 = "${var.stage}-${var.prefix}-${var.name}"
   kubernetes_version         = "1.23.8"
   private_cluster_enabled    = false
-  log_analytics_workspace_id = data.terraform_remote_state.monitoring.log_analytics_workspace_id
+  log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   identity_ids               = [module.aks_m_id.id]
   network_profile = {
     network_plugin     = "azure"

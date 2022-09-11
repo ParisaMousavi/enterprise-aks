@@ -17,3 +17,7 @@ data "terraform_remote_state" "monitoring" {
     key                  = "terraform.tfstate"
   }
 }
+
+output "jsdhsjdhajk" {
+  value = data.terraform_remote_state.monitoring
+}
