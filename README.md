@@ -1,4 +1,5 @@
 # Supported topics
+- Deploy AKS in terraform
 - AAD integration for AKS
   - take a look at terraform code
   - check the portal
