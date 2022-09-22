@@ -15,6 +15,3 @@ kubelogin convert-kubeconfig -l spn --client-id $ARM_CLIENT_ID --client-secret $
 
 kubectl get node
 
-# kubectl apply -f azure-vote.yaml
-
-# kubectl get service azure-vote-front --watch

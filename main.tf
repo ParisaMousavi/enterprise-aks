@@ -92,7 +92,7 @@ module "aks" {
   identity_ids           = [module.aks_m_id.id]
   aad_config = {
     managed                = true
-    admin_group_object_ids = ["36863794-54ba-4bfd-8622-67dd214c21dd"]
+    admin_group_object_ids = ["5aaba3a6-2f36-4e4e-9f02-5cd94dfd639d"]
     azure_rbac_enabled     = false
     tenant_id = "0f912e8a-5f68-43ec-9075-1533aaa80442"
   }
@@ -127,13 +127,6 @@ resource "azurerm_role_assignment" "this" {
   skip_service_principal_aad_check = true
 }
 
-# resource "azurerm_role_assignment" "aks_admin_sp" {
-#   principal_id                     = "07cea789-5bb0-4381-9255-17b9f6909aad"
-#   role_definition_name             = "Azure Kubernetes Service Cluster Admin Role"
-#   scope                            = module.aks.id
-#   skip_service_principal_aad_check = true
-# }
-
 data "azurerm_resource_group" "aks_node_rg" {
   name = module.aks_node_rg_name.result
   depends_on = [
@@ -150,53 +143,13 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   ]
 }
 
-# resource "null_resource" "aks_arc" {
-#   depends_on = [module.aks]
-#   triggers   = { always_run = timestamp() }
-#   // The order of input values are important for bash
-#   provisioner "local-exec" {
-#     command     = "chmod +x ${path.module}/bash-arc.sh ;${path.module}/bash-arc.sh ${module.resourcegroup.name} ${module.aks_name.result}"
-#     interpreter = ["bash", "-c"]
-#   }
-# }
-
-
-
-# resource "null_resource" "get_cluster_credentials" {
-#   depends_on = [module.aks]
-#   triggers   = { always_run = timestamp() }
-#   provisioner "local-exec" {
-#     command     = "az aks get-credentials --overwrite-existing --resource-group ${module.resourcegroup.name} --name ${module.aks_name.result}"
-#   }
-# }
-
 resource "null_resource" "run_vote_app" {
   depends_on = [module.aks]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
   provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/bash-vote.sh ;${path.module}/bash-vote.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
     interpreter = ["bash", "-c"]
   }
 }
 
-# resource "null_resource" "run_cna_express_app" {
-#   depends_on = [module.aks]
-#   triggers   = { always_run = timestamp() }
-#   // The order of input values are important for bash
-#   provisioner "local-exec" {
-#     command     = "chmod +x ${path.module}/cna-express/bash-cna-express.sh ;${path.module}/cna-express/bash-cna-express.sh ${module.acr_name.result} ${module.aks_name.result}  ${module.resourcegroup.name}"
-#     interpreter = ["bash", "-c"]
-#   }
-# }
-
-
-# az aks get-credentials --overwrite-existing --resource-group projn-rg-app-dev-weu --name projn-aks-app-dev-weu
-
-# az aks update -g projn-rg-app-dev-weu -n projn-aks-app-dev-weu --enable-azure-rbac
-
-# AKS_ID=$(az aks show -g projn-rg-app-dev-weu -n projn-aks-app-dev-weu --query id -o tsv)
-
-# az role assignment create --role "Azure Kubernetes Service RBAC Admin" --assignee "07cea789-5bb0-4381-9255-17b9f6909aad" --scope $AKS_ID
-
-# az role assignment create --role "Azure Kubernetes Service RBAC Admin" --assignee "692bcb4d-3198-46c3-9b85-c8eff3fbb90f" --scope $AKS_ID
