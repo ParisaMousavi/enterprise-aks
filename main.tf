@@ -12,16 +12,8 @@ module "resourcegroup" {
   location = var.location
   name     = module.rg_name.result
   tags = {
-    Service         = "Plat. netexc"
-    AssetName       = "Asset Name"
-    AssetID         = "AB00CD"
-    BusinessUnit    = "Plat. netexc Team"
-    Confidentiality = "C1"
-    Integrity       = "I1"
-    Availability    = "A1"
-    Criticality     = "Low"
-    Owner           = "parisamoosavinezhad@hotmail.com"
-    CostCenter      = ""
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
   }
 }
 
@@ -41,7 +33,10 @@ module "acr" {
   name                = module.acr_name.result
   sku                 = "Premium"
   admin_enabled       = "true"
-  additional_tags     = {}
+  additional_tags     = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
 }
 
 
@@ -59,7 +54,10 @@ module "aks_m_id" {
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.aks_m_id_name.result
-  additional_tags     = {}
+  additional_tags     = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
 }
 
 module "aks_name" {
@@ -89,12 +87,12 @@ module "aks" {
   kubernetes_version      = "1.23.8"
   private_cluster_enabled = false
   # log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
-  identity_ids           = [module.aks_m_id.id]
+  identity_ids = [module.aks_m_id.id]
   aad_config = {
     managed                = true
     admin_group_object_ids = ["5aaba3a6-2f36-4e4e-9f02-5cd94dfd639d"]
     azure_rbac_enabled     = false
-    tenant_id = "0f912e8a-5f68-43ec-9075-1533aaa80442"
+    tenant_id              = "0f912e8a-5f68-43ec-9075-1533aaa80442"
   }
   network_profile = {
     network_plugin     = "azure"
@@ -117,7 +115,10 @@ module "aks" {
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aks"].id
     vm_size             = "Standard_B2s"
   }
-  additional_tags = {}
+  additional_tags = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
 }
 
 resource "azurerm_role_assignment" "this" {
@@ -143,7 +144,7 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   ]
 }
 
-resource "null_resource" "run_vote_app" {
+resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
