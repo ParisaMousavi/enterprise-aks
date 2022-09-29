@@ -33,7 +33,7 @@ module "acr" {
   name                = module.acr_name.result
   sku                 = "Premium"
   admin_enabled       = "true"
-  additional_tags     = {
+  additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
   }
@@ -54,7 +54,7 @@ module "aks_m_id" {
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.aks_m_id_name.result
-  additional_tags     = {
+  additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
   }
@@ -142,6 +142,22 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   depends_on = [
     module.aks
   ]
+}
+
+module "aks_pool" {
+  # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+  source                = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-node-pool?ref=main"
+  name                  = "mypool"
+  kubernetes_cluster_id = module.aks.id
+  vm_size               = "Standard_B2s"
+  enable_auto_scaling   = true
+  node_count            = 1
+  min_count             = 1
+  max_count             = 1
+  additional_tags = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
 }
 
 resource "null_resource" "non_interactive_call" {

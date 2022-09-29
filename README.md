@@ -12,3 +12,7 @@
   - check the portal
 - non-interactive login
   - review terraform code/bash
+
+
+
+# https://stacksimplify.com/azure-aks/create-aks-nodepools-using-terraform/
