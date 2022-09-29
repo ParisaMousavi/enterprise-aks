@@ -154,6 +154,8 @@ module "aks_pool" {
   node_count            = 1
   min_count             = 1
   max_count             = 1
+  vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
+  zones                 = []
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
