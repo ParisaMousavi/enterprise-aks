@@ -6,6 +6,11 @@ output "aks_cluster_id" {
   value = module.aks.id
 }
 
+
+output "aks_cluster_name" {
+  value = module.aks.name
+}
+
 output "aks_cluster_resourcegroup_name" {
   value = module.resourcegroup.name
 }

@@ -78,7 +78,7 @@ module "aks_node_rg_name" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                  = "github.com/ParisaMousavi/az-aks-v2?ref=2022.10.07"
+  source                  = "github.com/ParisaMousavi/az-aks-v2?ref=main"
   resource_group_name     = module.resourcegroup.name
   node_resource_group     = module.aks_node_rg_name.result
   location                = module.resourcegroup.location
@@ -90,7 +90,7 @@ module "aks" {
   identity_ids = [module.aks_m_id.id]
   aad_config = {
     managed                = true
-    admin_group_object_ids = ["5aaba3a6-2f36-4e4e-9f02-5cd94dfd639d"]
+    admin_group_object_ids = ["3c2e87ec-e9c0-4683-a97c-c6cbe2a5ccbd"]
     azure_rbac_enabled     = false
     tenant_id              = var.tenant_id
   }

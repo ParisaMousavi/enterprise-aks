@@ -26,7 +26,3 @@ variable "location_shortname" {
 variable "tenant_id" {
   type = string
 }
-
-output "tenant_id" {
-  value = var.tenant_id
-}
