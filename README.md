@@ -1,17 +1,9 @@
-# Supported topics
-- Deploy AKS in terraform
-  - export ARM_CLIENT_ID="..."
-  - export ARM_CLIENT_SECRET="..."
-  - export ARM_SUBSCRIPTION_ID="..."
-  - export ARM_TENANT_ID="..."
-- AAD integration for AKS
-  - take a look at terraform code
-  - check the portal
-- How to manage the pipeline or CD service principal with AAD integration 
-  - take a look at terraform code
-  - check the portal
-- non-interactive login
-  - review terraform code/bash
+# Push changes in Azure DevOps Repo & GitHub
+```
+git remote set-url --add --push origin https://github.com/ParisaMousavi/enterprise-aks.git
+
+git remote set-url --add --push origin https://p-moosavinezhad@dev.azure.com/p-moosavinezhad/az-iac/_git/enterprise-aks
+```
 
 
 
