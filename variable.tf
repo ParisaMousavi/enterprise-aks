@@ -22,3 +22,11 @@ variable "location_shortname" {
   type    = string
   default = "weu"
 }
+
+variable "tenant_id" {
+  type = string
+}
+
+output "tenant_id" {
+  value = var.tenant_id
+}

@@ -1,5 +1,5 @@
 module "rg_name" {
-  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//rg?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//rg?ref=main"
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage
@@ -8,7 +8,7 @@ module "rg_name" {
 
 module "resourcegroup" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source   = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-resourcegroup?ref=main"
+  source   = "github.com/ParisaMousavi/az-resourcegroup?ref=main"
   location = var.location
   name     = module.rg_name.result
   tags = {
@@ -18,7 +18,7 @@ module "resourcegroup" {
 }
 
 module "acr_name" {
-  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//acr?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//acr?ref=main"
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage
@@ -27,7 +27,7 @@ module "acr_name" {
 
 module "acr" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-acr?ref=main"
+  source              = "github.com/ParisaMousavi/az-acr?ref=main"
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.acr_name.result
@@ -41,7 +41,7 @@ module "acr" {
 
 
 module "aks_m_id_name" {
-  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//mid?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//mid?ref=main"
   prefix             = var.prefix
   name               = "aks"
   stage              = var.stage
@@ -50,7 +50,7 @@ module "aks_m_id_name" {
 
 module "aks_m_id" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-managed-identity?ref=main"
+  source              = "github.com/ParisaMousavi/az-managed-identity?ref=main"
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.aks_m_id_name.result
@@ -61,7 +61,7 @@ module "aks_m_id" {
 }
 
 module "aks_name" {
-  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//aks?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//aks?ref=main"
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage
@@ -69,7 +69,7 @@ module "aks_name" {
 }
 
 module "aks_node_rg_name" {
-  source             = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-naming//rg?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//rg?ref=main"
   prefix             = var.prefix
   name               = "aks-node"
   stage              = var.stage
@@ -78,7 +78,7 @@ module "aks_node_rg_name" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                  = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-v2?ref=main"
+  source                  = "github.com/ParisaMousavi/az-aks-v2?ref=main"
   resource_group_name     = module.resourcegroup.name
   node_resource_group     = module.aks_node_rg_name.result
   location                = module.resourcegroup.location
@@ -92,7 +92,7 @@ module "aks" {
     managed                = true
     admin_group_object_ids = ["5aaba3a6-2f36-4e4e-9f02-5cd94dfd639d"]
     azure_rbac_enabled     = false
-    tenant_id              = "0f912e8a-5f68-43ec-9075-1533aaa80442"
+    tenant_id              = var.tenant_id
   }
   network_profile = {
     network_plugin     = "azure"
@@ -146,7 +146,7 @@ resource "azurerm_role_assignment" "aks_node_rg" {
 
 module "aks_pool" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                = "git::https://eh4amjsb2v7ke7yzqzkviryninjny3urbbq3pbkor25hhdbo5kea@dev.azure.com/p-moosavinezhad/az-iac/_git/az-aks-node-pool?ref=main"
+  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
   vm_size               = "Standard_B2s"
