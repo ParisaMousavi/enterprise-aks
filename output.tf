@@ -14,3 +14,8 @@ output "aks_cluster_name" {
 output "aks_cluster_resourcegroup_name" {
   value = module.resourcegroup.name
 }
+
+
+output "aks_http_application_routing_zone_name" {
+  value = module.aks.http_application_routing_zone_name
+}
