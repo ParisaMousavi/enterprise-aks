@@ -31,3 +31,5 @@ az k8s-extension create --name proja-ml-ext-app-dev-weu \
 - https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/troubleshooting?source=recommendations
 - https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/extensions
 - https://techcommunity.microsoft.com/t5/azure-arc-blog/realizing-machine-learning-anywhere-with-azure-kubernetes/ba-p/3470783
+
+test
