@@ -17,7 +17,7 @@ az k8s-extension create --name proja-ml-ext-app-dev-weu \
                         inferenceLoadBalancerHA=False \
                         --cluster-type managedClusters \
                         --cluster-name proja-aks-app-dev-weu \
-                        --resource-group proja-rg-app-dev-weu \
+                        --resource-group proja-rg-for-arc-dev-weu \
                         --scope cluste
 
 # Links
