@@ -26,3 +26,8 @@ variable "location_shortname" {
 variable "tenant_id" {
   type = string
 }
+
+variable "connect_to_arc" {
+  type = bool
+  default = true
+}
