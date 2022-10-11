@@ -5,7 +5,7 @@ variable "location" {
 
 variable "prefix" {
   type    = string
-  default = "projn"
+  default = "proja"
 }
 
 variable "stage" {
@@ -28,6 +28,6 @@ variable "tenant_id" {
 }
 
 variable "connect_to_arc" {
-  type = bool
+  type    = bool
   default = true
 }
