@@ -24,6 +24,30 @@ echo "az aks get-credentials --overwrite-existing --resource-group $resourcegrou
 az aks get-credentials --overwrite-existing --resource-group "$resourcegroupname" --name "$aksclustername" --file ./config
 kubelogin convert-kubeconfig -l spn --client-id $ARM_CLIENT_ID --client-secret $ARM_CLIENT_SECRET
 
+# Installing Azure Arc k8s CLI extensions
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'connectedk8s' extension..."
+az extension show --name "connectedk8s" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "connectedk8s"
+rm extension_output
+else
+az extension update --name "connectedk8s"
+rm extension_output
+fi
+echo ""
+
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'k8s-configuration' extension..."
+az extension show --name "k8s-configuration" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "k8s-configuration"
+rm extension_output
+else
+az extension update --name "k8s-configuration"
+rm extension_output
+fi
+echo ""
+
+
 echo "Clear cached helm Azure Arc Helm Charts"
 rm -rf ~/.azure/AzureArcCharts
 
