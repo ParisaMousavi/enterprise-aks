@@ -146,14 +146,14 @@ resource "azurerm_role_assignment" "aks_node_rg" {
 
 module "aks_pool" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.07"
+  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
   vm_size               = "Standard_B2s"
   enable_auto_scaling   = true
   node_count            = 1
   min_count             = 1
-  max_count             = 1
+  max_count             = 2
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
   zones                 = []
   additional_tags = {
@@ -162,24 +162,24 @@ module "aks_pool" {
   }
 }
 
-module "aks_pool_win" {
-  # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
-  name                  = "mypwin"
-  kubernetes_cluster_id = module.aks.id
-  vm_size               = "Standard_B2s"
-  enable_auto_scaling   = true
-  node_count            = 1
-  min_count             = 1
-  max_count             = 1
-  vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
-  zones                 = []
-  os_type               = "Windows"
-  additional_tags = {
-    CostCenter = "ABC000CBA"
-    By         = "parisamoosavinezhad@hotmail.com"
-  }
-}
+# module "aks_pool_win" {
+#   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
+#   name                  = "mypwin"
+#   kubernetes_cluster_id = module.aks.id
+#   vm_size               = "Standard_B2s"
+#   enable_auto_scaling   = true
+#   node_count            = 1
+#   min_count             = 1
+#   max_count             = 2
+#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
+#   zones                 = []
+#   os_type               = "Windows"
+#   additional_tags = {
+#     CostCenter = "ABC000CBA"
+#     By         = "parisamoosavinezhad@hotmail.com"
+#   }
+# }
 
 resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks]
