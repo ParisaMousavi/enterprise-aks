@@ -50,7 +50,7 @@ module "aks_cluster_m_id_name" {
 
 module "aks_cluster_m_id" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "github.com/ParisaMousavi/az-managed-identity?ref=main"
+  source              = "github.com/ParisaMousavi/az-managed-identity?ref=2022.10.24"
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.aks_cluster_m_id_name.result
@@ -71,7 +71,7 @@ module "aks_kubelet_m_id_name" {
 
 module "aks_kubelet_m_id" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "github.com/ParisaMousavi/az-managed-identity?ref=main"
+  source              = "github.com/ParisaMousavi/az-managed-identity?ref=2022.10.24"
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.aks_kubelet_m_id_name.result
@@ -99,7 +99,7 @@ module "aks_node_rg_name" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
+  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=2022.10.24"
   resource_group_name              = module.resourcegroup.name
   node_resource_group              = module.aks_node_rg_name.result
   location                         = module.resourcegroup.location
@@ -192,7 +192,7 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 # #----------------------------------------------------------
 # module "aks_pool" {
 #   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
+#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
 #   name                  = "mypool"
 #   kubernetes_cluster_id = module.aks.id
 #   vm_size               = "Standard_B2s"
@@ -213,7 +213,7 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 # #----------------------------------------------------------
 # module "aks_pool_win" {
 #   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
+#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
 #   name                  = "mypwin"
 #   kubernetes_cluster_id = module.aks.id
 #   vm_size               = "Standard_B2s"
