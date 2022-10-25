@@ -230,6 +230,50 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #   }
 # }
 
+module "keyvault_name" {
+  source             = "github.com/ParisaMousavi/az-naming//kv?ref=main"
+  prefix             = var.prefix
+  name               = var.name
+  stage              = var.stage
+  location_shortname = var.location_shortname
+}
+
+module "keyvault" {
+  source              = "github.com/ParisaMousavi/az-key-vault?ref=main"
+  resource_group_name = module.resourcegroup.name
+  location            = module.resourcegroup.location
+  name                = module.keyvault_name.result
+  tenant_id           = var.tenant_id
+  stage               = var.stage
+  sku_name            = "standard"
+  object_ids          = [data.azuread_service_principal.deployment_sp.object_id]
+  additional_tags = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
+  network_acls = {
+    bypass                     = null
+    default_action             = "value"
+    ip_rules                   = ["value"]
+    virtual_network_subnet_ids = ["value"]
+  }
+}
+
+module "keyvault_key_name" {
+  source   = "github.com/ParisaMousavi/az-naming//kv-key?ref=main"
+  prefix   = var.prefix
+  name     = var.name
+  stage    = var.stage
+  assembly = "kms"
+}
+
+module "keyvault_key_kms" {
+  source       = "github.com/ParisaMousavi/az-key-vault//key?ref=main"
+  name         = module.keyvault_key_name.result
+  key_vault_id = module.keyvault.id
+}
+
+
 resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks]
   triggers   = { always_run = timestamp() }

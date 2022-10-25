@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "3.22.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "2.29.0"
+    }
   }
 
   backend "azurerm" {
@@ -20,5 +24,12 @@ provider "azurerm" {
     resource_group {
       prevent_deletion_if_contains_resources = false
     }
+    key_vault {
+      purge_soft_delete_on_destroy = true
+    }
   }
+}
+
+provider "azuread" {
+  # Configuration options
 }

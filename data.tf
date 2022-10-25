@@ -17,3 +17,8 @@ data "terraform_remote_state" "monitoring" {
     key                  = "terraform.tfstate"
   }
 }
+
+
+data "azuread_service_principal" "deployment_sp" {
+  display_name = "technical-user-for-devops"
+}
