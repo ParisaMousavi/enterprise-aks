@@ -230,6 +230,12 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #   }
 # }
 
+
+# module "dns_zone" {
+#   source = ""
+#   dns_zone_name = "privatelink.vaultcore.azure.net"
+# }
+
 module "keyvault_name" {
   source             = "github.com/ParisaMousavi/az-naming//kv?ref=main"
   prefix             = var.prefix
@@ -246,7 +252,12 @@ module "keyvault" {
   tenant_id           = var.tenant_id
   stage               = var.stage
   sku_name            = "standard"
+  public_network_access_enabled = true
   object_ids          = [data.azuread_service_principal.deployment_sp.object_id]
+  private_endpoint_config = {
+    subnet_id = null
+    private_dns_zone_ids = [ "value" ]
+  }
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
@@ -268,6 +279,9 @@ module "keyvault_key_name" {
 }
 
 module "keyvault_key_kms" {
+  depends_on = [
+    module.keyvault
+  ]
   source       = "github.com/ParisaMousavi/az-key-vault//key?ref=main"
   name         = module.keyvault_key_name.result
   key_vault_id = module.keyvault.id
