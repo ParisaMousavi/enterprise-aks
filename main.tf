@@ -81,11 +81,16 @@ module "aks_kubelet_m_id" {
   }
 }
 
+
+#------------------------------------------------
+# AKS with aad enabled
+#------------------------------------------------
 module "aks_name" {
   source             = "github.com/ParisaMousavi/az-naming//aks?ref=2022.10.07"
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage
+  assembly           = "aad"
   location_shortname = var.location_shortname
 }
 
@@ -94,6 +99,7 @@ module "aks_node_rg_name" {
   prefix             = var.prefix
   name               = "aks-node"
   stage              = var.stage
+  assembly           = "aad"
   location_shortname = var.location_shortname
 }
 
@@ -140,7 +146,7 @@ module "aks" {
     name                = "default"
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
-    vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aks"].id
+    vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
     vm_size             = "Standard_B2s"
   }
   additional_tags = {
@@ -200,7 +206,7 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #   node_count            = 1
 #   min_count             = 1
 #   max_count             = 2
-#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
+#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
 #   zones                 = []
 #   additional_tags = {
 #     CostCenter = "ABC000CBA"
@@ -221,7 +227,7 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #   node_count            = 1
 #   min_count             = 1
 #   max_count             = 2
-#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aks"].id
+#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
 #   zones                 = []
 #   os_type               = "Windows"
 #   additional_tags = {
@@ -245,18 +251,18 @@ module "keyvault_name" {
 }
 
 module "keyvault" {
-  source              = "github.com/ParisaMousavi/az-key-vault?ref=main"
-  resource_group_name = module.resourcegroup.name
-  location            = module.resourcegroup.location
-  name                = module.keyvault_name.result
-  tenant_id           = var.tenant_id
-  stage               = var.stage
-  sku_name            = "standard"
+  source                        = "github.com/ParisaMousavi/az-key-vault?ref=main"
+  resource_group_name           = module.resourcegroup.name
+  location                      = module.resourcegroup.location
+  name                          = module.keyvault_name.result
+  tenant_id                     = var.tenant_id
+  stage                         = var.stage
+  sku_name                      = "standard"
   public_network_access_enabled = true
-  object_ids          = [data.azuread_service_principal.deployment_sp.object_id]
+  object_ids                    = [data.azuread_service_principal.deployment_sp.object_id]
   private_endpoint_config = {
-    subnet_id = null
-    private_dns_zone_ids = [ "value" ]
+    subnet_id            = null
+    private_dns_zone_ids = ["value"]
   }
   additional_tags = {
     CostCenter = "ABC000CBA"
