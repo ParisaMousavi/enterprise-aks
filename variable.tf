@@ -29,5 +29,5 @@ variable "tenant_id" {
 
 variable "connect_to_arc" {
   type    = bool
-  default = false
+  default = true
 }

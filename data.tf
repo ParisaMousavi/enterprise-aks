@@ -22,3 +22,8 @@ data "terraform_remote_state" "monitoring" {
 data "azuread_service_principal" "deployment_sp" {
   display_name = "technical-user-for-devops"
 }
+
+data "azuread_group" "aks_cluster_admin" {
+  display_name     = "AKS Cluster Admin"
+  security_enabled = true
+}

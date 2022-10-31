@@ -114,7 +114,7 @@ module "aks" {
   kubernetes_version               = "1.23.8"
   private_cluster_enabled          = false
   oidc_issuer_enabled              = false
-  http_application_routing_enabled = false
+  http_application_routing_enabled = true
   kubelet_identity = {
     client_id                 = module.aks_kubelet_m_id.client_id
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
@@ -124,8 +124,8 @@ module "aks" {
   identity_ids = [module.aks_cluster_m_id.id]
   aad_config = {
     managed                = true
-    admin_group_object_ids = ["3c2e87ec-e9c0-4683-a97c-c6cbe2a5ccbd"]
-    azure_rbac_enabled     = false
+    admin_group_object_ids = [data.azuread_group.aks_cluster_admin.id]
+    azure_rbac_enabled     = true
     tenant_id              = var.tenant_id
   }
   network_profile = {

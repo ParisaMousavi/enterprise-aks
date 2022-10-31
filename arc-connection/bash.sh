@@ -84,12 +84,3 @@ echo "Connecting the cluster to Azure Arc"
 az connectedk8s connect --name "$aksclustername" --resource-group "$resourcegroupnameforarc" --location "$location" --custom-locations-oid "22cfa2da-1491-4abc-adb3-c31c8c74cefa"
 
 az connectedk8s enable-features --name "$aksclustername" --resource-group "$resourcegroupnameforarc" --features cluster-connect custom-locations --custom-locations-oid "22cfa2da-1491-4abc-adb3-c31c8c74cefa"
-
-# ARM_ID_CLUSTER=$(az connectedk8s show -n "$aksclustername" -g "$resourcegroupnameforarc" --query id -o tsv)
-
-# AAD_ENTITY_OBJECT_ID=$(az ad sp show --id 07cea789-5bb0-4381-9255-17b9f6909aad --query id -o tsv)
-
-# az role assignment create --role "Azure Arc Kubernetes Viewer" --assignee 3c2e87ec-e9c0-4683-a97c-c6cbe2a5ccbd --scope $ARM_ID_CLUSTER
-# az role assignment create --role "Azure Arc Enabled Kubernetes Cluster User Role" --assignee 3c2e87ec-e9c0-4683-a97c-c6cbe2a5ccbd --scope $ARM_ID_CLUSTER
-
-# az connectedk8s proxy -n "$aksclustername" -g "$resourcegroupnameforarc"
