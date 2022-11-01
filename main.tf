@@ -105,7 +105,7 @@ module "aks_node_rg_name" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=2022.10.24"
+  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
   resource_group_name              = module.resourcegroup.name
   node_resource_group              = module.aks_node_rg_name.result
   location                         = module.resourcegroup.location
@@ -116,16 +116,16 @@ module "aks" {
   oidc_issuer_enabled              = false
   http_application_routing_enabled = true
   kubelet_identity = {
-    client_id                 = module.aks_kubelet_m_id.client_id
+    client_id                 = null # module.aks_kubelet_m_id.client_id
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
   }
   # log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
-  identity_ids = [module.aks_cluster_m_id.id]
+  identity_ids = []
   aad_config = {
     managed                = true
     admin_group_object_ids = [data.azuread_group.aks_cluster_admin.id]
-    azure_rbac_enabled     = true
+    azure_rbac_enabled     = false
     tenant_id              = var.tenant_id
   }
   network_profile = {
@@ -250,48 +250,48 @@ module "keyvault_name" {
   location_shortname = var.location_shortname
 }
 
-module "keyvault" {
-  source                        = "github.com/ParisaMousavi/az-key-vault?ref=main"
-  resource_group_name           = module.resourcegroup.name
-  location                      = module.resourcegroup.location
-  name                          = module.keyvault_name.result
-  tenant_id                     = var.tenant_id
-  stage                         = var.stage
-  sku_name                      = "standard"
-  public_network_access_enabled = true
-  object_ids                    = [data.azuread_service_principal.deployment_sp.object_id]
-  private_endpoint_config = {
-    subnet_id            = null
-    private_dns_zone_ids = ["value"]
-  }
-  additional_tags = {
-    CostCenter = "ABC000CBA"
-    By         = "parisamoosavinezhad@hotmail.com"
-  }
-  network_acls = {
-    bypass                     = null
-    default_action             = "value"
-    ip_rules                   = ["value"]
-    virtual_network_subnet_ids = ["value"]
-  }
-}
+# module "keyvault" {
+#   source                        = "github.com/ParisaMousavi/az-key-vault?ref=main"
+#   resource_group_name           = module.resourcegroup.name
+#   location                      = module.resourcegroup.location
+#   name                          = module.keyvault_name.result
+#   tenant_id                     = var.tenant_id
+#   stage                         = var.stage
+#   sku_name                      = "standard"
+#   public_network_access_enabled = true
+#   object_ids                    = [data.azuread_service_principal.deployment_sp.object_id]
+#   private_endpoint_config = {
+#     subnet_id            = null
+#     private_dns_zone_ids = ["value"]
+#   }
+#   additional_tags = {
+#     CostCenter = "ABC000CBA"
+#     By         = "parisamoosavinezhad@hotmail.com"
+#   }
+#   network_acls = {
+#     bypass                     = null
+#     default_action             = "value"
+#     ip_rules                   = ["value"]
+#     virtual_network_subnet_ids = ["value"]
+#   }
+# }
 
-module "keyvault_key_name" {
-  source   = "github.com/ParisaMousavi/az-naming//kv-key?ref=main"
-  prefix   = var.prefix
-  name     = var.name
-  stage    = var.stage
-  assembly = "kms"
-}
+# module "keyvault_key_name" {
+#   source   = "github.com/ParisaMousavi/az-naming//kv-key?ref=main"
+#   prefix   = var.prefix
+#   name     = var.name
+#   stage    = var.stage
+#   assembly = "kms"
+# }
 
-module "keyvault_key_kms" {
-  depends_on = [
-    module.keyvault
-  ]
-  source       = "github.com/ParisaMousavi/az-key-vault//key?ref=main"
-  name         = module.keyvault_key_name.result
-  key_vault_id = module.keyvault.id
-}
+# module "keyvault_key_kms" {
+#   depends_on = [
+#     module.keyvault
+#   ]
+#   source       = "github.com/ParisaMousavi/az-key-vault//key?ref=main"
+#   name         = module.keyvault_key_name.result
+#   key_vault_id = module.keyvault.id
+# }
 
 
 resource "null_resource" "non_interactive_call" {

@@ -1,0 +1,87 @@
+az aks get-credentials --overwrite-existing --resource-group proja-rg-app-dev-weu --name proja-aks-app-dev-aad-weu --file ./config
+
+az k8s-extension create --name azuremonitor-containers  --extension-type Microsoft.AzureMonitor.Containers --scope cluster --cluster-name <clusterName> --resource-group <resourceGroupName> --cluster-type connectedClusters
+
+az k8s-extension create -g "proja-rg-for-arc-dev-weu" -c "proja-aks-app-dev-aad-weu" -n flux --extension-type microsoft.flux -t connectedClusters
+
+az k8s-extension create -g "proja-rg-for-arc-dev-weu" -c "proja-aks-app-dev-aad-weu" -n flux --extension-type microsoft.flux -t managedClusters
+
+1- az feature register --namespace Microsoft.ContainerService --name AKS-ExtensionManager
+ 
+
+2-az version
+az upgrade
+
+4- az provider register --namespace Microsoft.Kubernetes
+az provider register --namespace Microsoft.ContainerService
+az provider register --namespace Microsoft.KubernetesConfiguration
+
+az provider show -n Microsoft.KubernetesConfiguration -o table
+az provider show -n Microsoft.ContainerService -o table
+
+5- 
+az extension add -n k8s-configuration
+az extension add -n k8s-extension
+az extension update -n k8s-configuration
+az extension update -n k8s-extension
+az extension list -o table
+
+6-
+az k8s-configuration flux create -g "proja-rg-for-arc-dev-weu" \
+-c "proja-aks-app-dev-aad-weu" \
+-n cluster-config \
+--namespace cluster-config \
+-t connectedClusters \
+--scope cluster \
+-u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
+--branch main  \
+--kustomization name=infra path=./infrastructure prune=true \
+--kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\]
+
+az k8s-configuration flux create -g "proja-rg-for-arc-dev-weu" \
+-c "proja-aks-app-dev-aad-weu" \
+-n cluster-config \
+--namespace cluster-config \
+-t connectedClusters \
+--scope cluster \
+-u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
+--branch main  \
+--kustomization name=infra path=./infrastructure prune=true \
+--kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\]
+
+
+
+'Microsoft.Flux' extension not found on the cluster, installing it now. This may take a few minutes...
+'Microsoft.Flux' extension was successfully installed on the cluster
+Creating the flux configuration 'cluster-config' in the cluster. This may take a few minutes...
+{
+  "complianceState": "Pending",
+  ... (not shown because of pending status)
+}
+
+5- az k8s-extension create -g "proja-rg-for-arc-dev-weu" -c "proja-aks-app-dev-aad-weu" -n flux --extension-type microsoft.flux -t connectedClusters
+
+
+
+
+az k8s-configuration create --name gitops-config-2 \
+  --cluster-name "proja-aks-app-dev-aad-weu" \
+  --resource-group "proja-rg-for-arc-dev-weu" \
+  --operator-instance-name gitops-config-2 \
+  --operator-namespace gitops-config-2 \
+  --repository-url "https://github.com/ParisaMousavi/solution-11-aks-apps/hello-kubernetes-arc-demo/" \
+  --scope cluster --cluster-type connectedClusters \
+  --operator-params="--git-poll-interval 5s --git-readonly"
+
+az k8s-configuration flux create --resource-group "proja-rg-for-arc-dev-weu" \
+--cluster-name "proja-aks-app-dev-aad-weu" --cluster-type connectedClusters \
+--name myconfig --scope cluster --namespace my-namespace \
+--kind git --url https://github.com/Azure/arc-k8s-demo \
+--branch main --kustomization name=my-kustomization
+
+
+
+az k8s-configuration delete --name gitops-config \
+  --cluster-name "proja-aks-app-dev-aad-weu" \
+  --resource-group "proja-rg-for-arc-dev-weu" \
+  --cluster-type connectedClusters --yes
