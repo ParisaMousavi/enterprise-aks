@@ -27,16 +27,80 @@ az extension update -n k8s-extension
 az extension list -o table
 
 6-
-az k8s-configuration flux create -g "proja-rg-for-arc-dev-weu" \
--c "proja-aks-app-dev-aad-weu" \
--n cluster-config \
---namespace cluster-config \
--t connectedClusters \
+az k8s-extension delete --cluster-name
+                        --cluster-type {appliances, connectedClusters, managedClusters, provisionedClusters}
+                        --name
+                        --resource-group
+                        [--cluster-resource-provider]
+                        [--force]
+                        [--no-wait]
+                        [--yes]
+
+az k8s-extension list --cluster-name
+                      --cluster-type {appliances, connectedClusters, managedClusters, provisionedClusters}
+                      --resource-group
+
+az k8s-extension list --cluster-name tname-eks-myproje-env-euc1 --cluster-type connectedClusters  --resource-group tname-rg-for-arc-env-weu               
+
+# for troubleshooting
+az k8s-extension delete --cluster-name tname-eks-myproje-env-euc1 --cluster-type connectedClusters --name cluster-config  --resource-group tname-rg-for-arc-env-weu
+
+az k8s-extension create --extension-type=microsoft.flux \
+--resource-group "tname-rg-for-arc-env-weu" \
+--cluster-name "tname-eks-myproje-env-euc1" \
+--cluster-type connectedClusters \
 --scope cluster \
+--name cluster-config \
+--release-train stable
+
+
+az k8s-configuration flux create \
+--resource-group "tname-rg-for-arc-env-weu" \
+--cluster-name "tname-eks-myproje-env-euc1" \
+--name cluster-config \
+--namespace cluster-config \
+--cluster-type connectedClusters \
+--scope cluster \
+--kind git \
 -u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
 --branch main  \
 --kustomization name=infra path=./infrastructure prune=true \
 --kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\]
+
+az k8s-configuration flux update \
+--resource-group "tname-rg-for-arc-env-weu" \
+--cluster-name "tname-eks-myproje-env-euc1" \
+--cluster-type connectedClusters \
+--scope cluster \
+--kind git \
+-u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
+--branch main  \
+--kustomization name=infra path=./infrastructure prune=true \
+--kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\] 
+
+az k8s-configuration flux update \
+--resource-group "tname-rg-for-arc-env-weu" \
+--cluster-name "tname-eks-myproje-env-euc1" \
+--name cluster-config \
+--cluster-type connectedClusters \
+--kind git \
+-u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
+--branch main  \
+--kustomization name=infra path=./infrastructure prune=true \
+--kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\] 
+
+
+
+az k8s-configuration flux update \
+--resource-group "proja-rg-for-arc-dev-weu" \
+--cluster-name "proja-aks-app-dev-aad-weu" \
+--name cluster-config \
+--cluster-type connectedClusters \
+--kind git \
+-u https://github.com/Azure/gitops-flux2-kustomize-helm-mt \
+--branch main  \
+--kustomization name=infra path=./infrastructure prune=true \
+--kustomization name=apps path=./apps/staging prune=true dependsOn=\["infra"\] 
 
 az k8s-configuration flux create -g "proja-rg-for-arc-dev-weu" \
 -c "proja-aks-app-dev-aad-weu" \

@@ -147,7 +147,7 @@ module "aks" {
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
-    vm_size             = "Standard_B2s"
+    vm_size             = "Standard_B4ms" # "Standard_B2s" I use this size for my videos
   }
   additional_tags = {
     CostCenter = "ABC000CBA"
@@ -193,26 +193,26 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 }
 
 
-# #----------------------------------------------------------
-# # Use it to deploy linux user node pool 
-# #----------------------------------------------------------
-# module "aks_pool" {
-#   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-#   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
-#   name                  = "mypool"
-#   kubernetes_cluster_id = module.aks.id
-#   vm_size               = "Standard_B2s"
-#   enable_auto_scaling   = true
-#   node_count            = 1
-#   min_count             = 1
-#   max_count             = 2
-#   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
-#   zones                 = []
-#   additional_tags = {
-#     CostCenter = "ABC000CBA"
-#     By         = "parisamoosavinezhad@hotmail.com"
-#   }
-# }
+#----------------------------------------------------------
+# Use it to deploy linux user node pool 
+#----------------------------------------------------------
+module "aks_pool" {
+  # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
+  name                  = "mypool"
+  kubernetes_cluster_id = module.aks.id
+  vm_size               = "Standard_B4ms" # "Standard_B2s" I use this size for my videos
+  enable_auto_scaling   = true
+  node_count            = 1
+  min_count             = 1
+  max_count             = 2
+  vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
+  zones                 = []
+  additional_tags = {
+    CostCenter = "ABC000CBA"
+    By         = "parisamoosavinezhad@hotmail.com"
+  }
+}
 
 # #----------------------------------------------------------
 # # Use it to deploy windows user node pool 
