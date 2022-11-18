@@ -103,6 +103,11 @@ module "aks_node_rg_name" {
   location_shortname = var.location_shortname
 }
 
+module "aks_ssh" {
+  # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+  source = "github.com/ParisaMousavi/ssh-key?ref=main"
+}
+
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
   source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
@@ -116,7 +121,7 @@ module "aks" {
   oidc_issuer_enabled              = false
   http_application_routing_enabled = true
   kubelet_identity = {
-    client_id                 = null # module.aks_kubelet_m_id.client_id
+    client_id                 = null                                 # module.aks_kubelet_m_id.client_id
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
   }
@@ -137,17 +142,23 @@ module "aks" {
     load_balancer_sku  = "standard"
     outbound_type      = "loadBalancer"
   }
+  # The autoscaler increases/descreses the nodes
+  # Therefore the type must be VirtualMachineScaleSets.
   default_node_pool = {
     enable_auto_scaling = true
     node_count          = 1
-    max_count           = 1
+    max_count           = 5
     min_count           = 1
     max_pods            = 30
     name                = "default"
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
-    vm_size             = "Standard_B4ms" # "Standard_B2s" I use this size for my videos
+    vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use this size for my videos
+  }
+  linux_profile = {
+    admin_username = "azureuser"
+    key_data       = module.aks_ssh.public_ssh_key
   }
   additional_tags = {
     CostCenter = "ABC000CBA"
@@ -201,7 +212,7 @@ module "aks_pool" {
   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
-  vm_size               = "Standard_B4ms" # "Standard_B2s" I use this size for my videos
+  vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use this size for my videos
   enable_auto_scaling   = true
   node_count            = 1
   min_count             = 1
