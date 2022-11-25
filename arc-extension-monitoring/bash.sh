@@ -4,15 +4,14 @@ logAnalyticsWorkspaceResourceID=$3
 
 az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
 
-# Installing Azure Arc k8s CLI extensions
-echo "Checking if you have up-to-date Azure Arc AZ CLI 'connectedk8s' extension..."
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'k8s-extension' extension..."
 echo "--------------------------------------------"
-az extension show --name "connectedk8s" &> extension_output
+az extension show --name "k8s-extension" &> extension_output
 if cat extension_output | grep -q "not installed"; then
-az extension add --name "connectedk8s"
+az extension add --name "k8s-extension"
 rm extension_output
 else
-az extension update --name "connectedk8s"
+az extension update --name "k8s-extension"
 rm extension_output
 fi
 echo ""
