@@ -1,56 +1,119 @@
-# Page reference : https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/custom-locations
-#Install the following Azure CLI extensions
-az extension add --name connectedk8s
-az extension add --name k8s-extension
-az extension add --name customlocation
+aksclustername=$1
+resourcegroupnameforarc=$2
+region=$3
+# Arc Data Service Extension Name
+adsExtensionName=$4
+# Custom Location name is used for custom-location's and data-extension's namespace.
+customLocationName=$5
 
-# Or update them
-az extension update --name connectedk8s
-az extension update --name k8s-extension
-az extension update --name customlocation
+echo "--------------------------------------"
+echo "aksclustername="$aksclustername
+echo "resourcegroupnameforarc="$resourcegroupnameforarc
+echo "region="$region
+echo "adsExtensionName="$adsExtensionName
+echo "customLocationName="$customLocationName
+echo "--------------------------------------"
 
-#Verify completed provider registration for Microsoft.ExtendedLocation
+aws eks update-kubeconfig --region $region --name $aksclustername
+
+az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'connectedk8s' extension..."
+echo "--------------------------------------\n"
+az extension show --name "connectedk8s" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "connectedk8s"
+rm extension_output
+else
+az extension update --name "connectedk8s"
+rm extension_output
+fi
+echo ""
+
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'k8s-extension' extension..."
+echo "--------------------------------------\n"
+az extension show --name "k8s-extension" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "k8s-extension"
+rm extension_output
+else
+az extension update --name "k8s-extension"
+rm extension_output
+fi
+echo ""
+
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'customlocation' extension..."
+echo "--------------------------------------\n"
+az extension show --name "customlocation" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "customlocation"
+rm extension_output
+else
+az extension update --name "customlocation"
+rm extension_output
+fi
+echo ""
+
+echo "Checking if you have up-to-date Azure Arc AZ CLI 'k8s-configuration' extension..."
+echo "--------------------------------------\n"
+az extension show --name "k8s-configuration" &> extension_output
+if cat extension_output | grep -q "not installed"; then
+az extension add --name "k8s-configuration"
+rm extension_output
+else
+az extension update --name "k8s-configuration"
+rm extension_output
+fi
+echo ""
+
+echo "Register Microsoft.ExtendedLocation provider"
+echo "--------------------------------------\n"
 az provider register --namespace Microsoft.ExtendedLocation
-az provider register --namespace Microsoft.ExtendedLocation
 
-# Once registered, the RegistrationState state will have the Registered value
+echo "Verification of Microsoft.ExtendedLocation provider installaion"
+echo "--------------------------------------"
+az provider show -n Microsoft.ExtendedLocation -o table
 
-# Enable custom locations on your cluster
-az connectedk8s enable-features -n <clusterName> -g <resourceGroupName> --features cluster-connect custom-locations
+echo "Enable custom locations on your cluster"
+echo "Get Custom Locations RP (Enterprise Application) Id"
+echo "--------------------------------------"
+# Custom Locations RP (Enterprise Application)
+customLocationSpId=$(az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv)
 
-# Sign in to Azure CLI using your user account. Fetch the objectId or id of the Azure AD application used by Azure Arc service. The command you use depends on your version of Azure CLI
-az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query objectId -o tsv
-az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-
-# Sign in to Azure CLI using the service principal. Use the <objectId> or id value from the previous step to enable custom locations on the cluster
-az connectedk8s enable-features -n <clustername> -g <resourcegroupname> \
-    --features cluster-connect custom-locations --custom-locations-oid <objectId/id>
-# The custom locations feature is dependent on the Cluster Connect feature. Both features have to be enabled for custom locations to work
+echo "Enable Custom Locations feature on projected cluster"
+echo "--------------------------------------"
 # az connectedk8s enable-features must be run on a machine where the kubeconfig file is pointing to the cluster on which the features are to be enabled.
+az connectedk8s enable-features -n $aksclustername \
+-g $resourcegroupnameforarc \
+--features cluster-connect custom-locations \
+--custom-locations-oid $customLocationSpId
 
-# Deploy the Azure service cluster extension of the Azure service instance you want to install on your cluster
-    # Azure Arc-enabled Data Services : Outbound proxy without authentication and outbound proxy with basic authentication are supported by the Azure Arc-enabled Data Services cluster extension
-    # Azure App Service on Azure Arc
-    # Event Grid on Kubernetes
+# deploy the data controller / extension in direct connectivity mode 
+echo "Create the Arc data services extension"
+echo "--------------------------------------"
+# dc's namespace must be the same as custom location's namespace
+# reference link for creating a custom location : https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/custom-locations
 
-# Get the Azure Resource Manager identifier of the Azure Arc-enabled Kubernetes cluster, referenced in later steps as connectedClusterId
-az connectedk8s show -n <clusterName> -g <resourceGroupName>  --query id -o tsv
+az k8s-extension create \
+--cluster-name ${aksclustername} \
+--resource-group ${resourcegroupnameforarc} --name ${adsExtensionName} \
+--cluster-type connectedClusters --extension-type microsoft.arcdataservices \
+--auto-upgrade false --scope cluster --release-namespace ${customLocationName} \
+--config Microsoft.CustomLocation.ServiceAccount=sa-arc-bootstrapper
 
-# Get the Azure Resource Manager identifier of the cluster extension deployed on top of Azure Arc-enabled Kubernetes cluster, referenced in later steps as extensionId:
-az k8s-extension show --name <extensionInstanceName> --cluster-type connectedClusters -c <clusterName> -g <resourceGroupName>  --query id -o tsv
+# Get the Azure Resource Manager identifier of the Azure Arc-enabled Kubernetes cluster
+provisionedClusterId=$(az connectedk8s show -n $aksclustername -g $resourcegroupnameforarc  --query id -o tsv)
 
-# Create the custom location by referencing the Azure Arc-enabled Kubernetes cluster and the extension
-az customlocation create -n <customLocationName> -g <resourceGroupName> --namespace <name of namespace> --host-resource-id <connectedClusterId> --cluster-extension-ids <extensionIds>
+# Get the Azure Resource Manager identifier of the cluster extension deployed on top of Azure Arc-enabled Kubernetes cluster
+extensionId=$(az k8s-extension show --name ${adsExtensionName} --cluster-type connectedClusters -c ${aksclustername} -g ${resourcegroupnameforarc}   --query id -o tsv)
 
-# Show details of a custom location
-az customlocation show -n <customLocationName> -g <resourceGroupName>
+# reference link : https://github.com/fengzhou-msft/azure-cli/blob/ea149713de505fa0f8ae6bfa5d998e12fc8ff509/doc/use_cli_with_git_bash.md
+# MSYS_NO_PATHCONV=1 because of Git bash auto translate
+# Create the custom location
+MSYS_NO_PATHCONV=1 az customlocation create -n ${customLocationName} -g ${resourcegroupnameforarc} \
+    --namespace ${customLocationName} --host-resource-id ${provisionedClusterId} \
+    --cluster-extension-ids ${extensionId} --assign-identity "SystemAssigned" \
+    --location westeurope
 
-# List custom locations
-az customlocation list -g <resourceGroupName>
+az customlocation show -n ${customLocationName} -g ${resourcegroupnameforarc}
 
-# Update a custom location
-# Use the update command to add new tags or associate new cluster extension IDs to the custom location while retaining existing tags and associated cluster extensions. --cluster-extension-ids, --tags, assign-identity can be updated
-az customlocation update -n <customLocationName> -g <resourceGroupName> --namespace <name of namespace> --host-resource-id <connectedClusterId> --cluster-extension-ids <extensionIds>
-
-# Delete a custom location
-az customlocation delete -n <customLocationName> -g <resourceGroupName> --namespace <name of namespace> --host-resource-id <connectedClusterId> --cluster-extension-ids <extensionIds>

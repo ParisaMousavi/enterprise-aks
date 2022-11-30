@@ -125,7 +125,11 @@ module "aks" {
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
   }
-  # log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
+  logging = {
+    enabele_diagnostic_setting = true
+    enable_oms_agent           = false
+    log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
+  }
   identity_ids = []
   aad_config = {
     managed                = true
@@ -145,16 +149,16 @@ module "aks" {
   # The autoscaler increases/descreses the nodes
   # Therefore the type must be VirtualMachineScaleSets.
   default_node_pool = {
-    enable_auto_scaling = true
+    enable_auto_scaling = false
     node_count          = 1
-    max_count           = 5
-    min_count           = 1
+    max_count           = null
+    min_count           = null
     max_pods            = 30
     name                = "default"
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
-    vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use this size for my videos
+    vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   }
   linux_profile = {
     admin_username = "azureuser"
@@ -212,11 +216,11 @@ module "aks_pool" {
   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
-  vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use this size for my videos
-  enable_auto_scaling   = true
+  vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
+  enable_auto_scaling   = false
   node_count            = 1
-  min_count             = 1
-  max_count             = 2
+  min_count             = null
+  max_count             = null
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
   additional_tags = {

@@ -29,10 +29,10 @@ variable "tenant_id" {
 
 variable "connect_to_arc" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "install_arc_monitor" {
   type    = bool
-  default = true
+  default = false
 }

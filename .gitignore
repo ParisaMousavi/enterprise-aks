@@ -6,3 +6,5 @@ terraform.tfstate.backup
 .terraform.tfstate.lock.info
 config
 token.txt
+private_ssh_key
+only-for-me.txt
