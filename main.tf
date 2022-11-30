@@ -105,12 +105,12 @@ module "aks_node_rg_name" {
 
 module "aks_ssh" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source = "github.com/ParisaMousavi/ssh-key?ref=main"
+  source = "github.com/ParisaMousavi/ssh-key?ref=2022.11.30"
 }
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
+  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=2022.11.30"
   resource_group_name              = module.resourcegroup.name
   node_resource_group              = module.aks_node_rg_name.result
   location                         = module.resourcegroup.location
@@ -213,7 +213,7 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #----------------------------------------------------------
 module "aks_pool" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
+  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.11.30"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
   vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
@@ -258,7 +258,7 @@ module "aks_pool" {
 # }
 
 module "keyvault_name" {
-  source             = "github.com/ParisaMousavi/az-naming//kv?ref=main"
+  source             = "github.com/ParisaMousavi/az-naming//kv?ref=2022.11.30"
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage

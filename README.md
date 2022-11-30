@@ -14,6 +14,7 @@ git tag -a <year.month.day> -m "description"
 git push origin <year.month.day>
 
 ```
+- git tag -a 2022.11.30 -m "aks operation scaling video"; git push origin 2022.11.30;
 
 
 **https://stacksimplify.com/azure-aks/create-aks-nodepools-using-terraform/**
