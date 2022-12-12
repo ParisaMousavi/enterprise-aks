@@ -110,7 +110,7 @@ module "aks_ssh" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=2022.11.30"
+  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
   resource_group_name              = module.resourcegroup.name
   node_resource_group              = module.aks_node_rg_name.result
   location                         = module.resourcegroup.location
@@ -149,16 +149,17 @@ module "aks" {
   # The autoscaler increases/descreses the nodes
   # Therefore the type must be VirtualMachineScaleSets.
   default_node_pool = {
-    enable_auto_scaling = false
+    enable_auto_scaling = true
     node_count          = 1
-    max_count           = null
-    min_count           = null
+    max_count           = 3
+    min_count           = 1
     max_pods            = 30
     name                = "default"
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
     vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
+    scale_down_mode     = "ScaleDownModeDelete"
   }
   linux_profile = {
     admin_username = "azureuser"
@@ -213,16 +214,17 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
 #----------------------------------------------------------
 module "aks_pool" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.11.30"
+  source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
   vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
-  enable_auto_scaling   = false
+  enable_auto_scaling   = true
   node_count            = 1
-  min_count             = null
-  max_count             = null
+  min_count             = 0
+  max_count             = 2
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
+  scale_down_mode       = "Delete"
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
