@@ -3,6 +3,7 @@ module "rg_name" {
   prefix             = var.prefix
   name               = var.name
   stage              = var.stage
+  assembly           = "aks-w-aad"
   location_shortname = var.location_shortname
 }
 
@@ -97,9 +98,9 @@ module "aks_name" {
 module "aks_node_rg_name" {
   source             = "github.com/ParisaMousavi/az-naming//rg?ref=2022.10.07"
   prefix             = var.prefix
-  name               = "aks-node"
+  name               = var.name
   stage              = var.stage
-  assembly           = "aad"
+  assembly           = "aad-aks-node"
   location_shortname = var.location_shortname
 }
 
@@ -259,13 +260,13 @@ module "aks_pool" {
 #   dns_zone_name = "privatelink.vaultcore.azure.net"
 # }
 
-module "keyvault_name" {
-  source             = "github.com/ParisaMousavi/az-naming//kv?ref=2022.11.30"
-  prefix             = var.prefix
-  name               = var.name
-  stage              = var.stage
-  location_shortname = var.location_shortname
-}
+# module "keyvault_name" {
+#   source             = "github.com/ParisaMousavi/az-naming//kv?ref=2022.11.30"
+#   prefix             = var.prefix
+#   name               = var.name
+#   stage              = var.stage
+#   location_shortname = var.location_shortname
+# }
 
 # module "keyvault" {
 #   source                        = "github.com/ParisaMousavi/az-key-vault?ref=main"
