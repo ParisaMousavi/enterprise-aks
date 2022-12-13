@@ -313,7 +313,7 @@ module "aks_pool" {
 
 
 resource "null_resource" "non_interactive_call" {
-  depends_on = [module.aks]
+  depends_on = [module.aks, module.aks_pool]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
   provisioner "local-exec" {
