@@ -129,7 +129,7 @@ module "aks" {
   logging = {
     enabele_diagnostic_setting = true
     enable_oms_agent           = false
-    log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
+    log_analytics_workspace_id = null #data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   }
   identity_ids = []
   aad_config = {
