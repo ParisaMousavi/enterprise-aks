@@ -316,9 +316,9 @@ resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks, module.aks_pool]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
-  provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
-    interpreter = ["bash", "-c"]
-  }
+  # provisioner "local-exec" {
+  #   command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+  #   interpreter = ["bash", "-c"]
+  # }
 }
 
