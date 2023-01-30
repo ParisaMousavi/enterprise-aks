@@ -166,6 +166,15 @@ module "aks" {
     admin_username = "azureuser"
     key_data       = module.aks_ssh.public_ssh_key
   }
+
+  storage_profile = {
+    blob_driver_enabled         = false
+    disk_driver_enabled         = false
+    disk_driver_version         = null
+    file_driver_enabled         = false
+    snapshot_controller_enabled = false
+  }
+
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
