@@ -122,7 +122,7 @@ module "aks" {
   oidc_issuer_enabled              = false
   http_application_routing_enabled = true
   kubelet_identity = {
-    client_id                 = null                                 # module.aks_kubelet_m_id.client_id
+    client_id                 = module.aks_kubelet_m_id.client_id # null: used if I want to use system-assigned identity
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
   }
@@ -131,7 +131,7 @@ module "aks" {
     enable_oms_agent           = false
     log_analytics_workspace_id = null #data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   }
-  identity_ids = []
+  identity_ids = [module.aks_cluster_m_id.id] # []: used if I want to use system-assigned identity instead of user-assigned
   aad_config = {
     managed                = true
     admin_group_object_ids = [data.azuread_group.aks_cluster_admin.id]
@@ -168,11 +168,11 @@ module "aks" {
   }
 
   storage_profile = {
-    blob_driver_enabled         = false
-    disk_driver_enabled         = false
-    disk_driver_version         = null
-    file_driver_enabled         = false
-    snapshot_controller_enabled = false
+    blob_driver_enabled         = true
+    disk_driver_enabled         = true
+    disk_driver_version         = "v1"
+    file_driver_enabled         = true
+    snapshot_controller_enabled = true
   }
 
   additional_tags = {
@@ -325,9 +325,8 @@ resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks, module.aks_pool]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
-  # provisioner "local-exec" {
-  #   command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
-  #   interpreter = ["bash", "-c"]
-  # }
+  provisioner "local-exec" {
+    command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    interpreter = ["bash", "-c"]
+  }
 }
-
