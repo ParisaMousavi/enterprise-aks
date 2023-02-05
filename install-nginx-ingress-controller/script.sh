@@ -19,7 +19,13 @@ NAMESPACE=ingress-basic
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
-helm install ingress-nginx-b ingress-nginx/ingress-nginx \
+# Basic version
+# helm install ingress-nginx ingress-nginx/ingress-nginx \
+#   --create-namespace \
+#   --namespace $NAMESPACE \
+#   --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
   --create-namespace \
   --namespace $NAMESPACE \
   --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
@@ -29,6 +35,15 @@ helm install ingress-nginx-b ingress-nginx/ingress-nginx \
   --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/os"=linux \
   --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
   -f ./install-nginx-ingress-controller/internal-ingress.yaml    
+
+#-----------------------------------------
+# Check the load balancer service
+#-----------------------------------------
+kubectl get services --namespace $NAMESPACE -o wide -w ingress-nginx-controller
+# Run demo applications : refer to aks-helloworld-one
+# kubectl apply -f aks-helloworld-one.yaml --namespace ingress-basic
+# kubectl apply -f aks-helloworld-two.yaml --namespace ingress-basic
+# kubectl apply -f hello-world-ingress.yaml --namespace ingress-basic
 
 #-----------------------------------------
 # Verification
