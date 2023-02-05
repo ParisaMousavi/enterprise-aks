@@ -115,16 +115,17 @@ module "aks_ssh" {
 
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                           = "github.com/ParisaMousavi/az-aks-v2?ref=main"
-  resource_group_name              = module.resourcegroup.name
-  node_resource_group              = module.aks_node_rg_name.result
-  location                         = module.resourcegroup.location
-  name                             = module.aks_name.result
-  dns_prefix                       = "${var.stage}-${var.prefix}-${var.name}"
-  kubernetes_version               = "1.23.8"
-  private_cluster_enabled          = false
-  oidc_issuer_enabled              = false
-  http_application_routing_enabled = true
+  source                  = "github.com/ParisaMousavi/az-aks-v2?ref=main"
+  resource_group_name     = module.resourcegroup.name
+  node_resource_group     = module.aks_node_rg_name.result
+  location                = module.resourcegroup.location
+  name                    = module.aks_name.result
+  dns_prefix              = "${var.stage}-${var.prefix}-${var.name}"
+  kubernetes_version      = "1.23.8"
+  private_cluster_enabled = false
+  oidc_issuer_enabled     = false
+  # This attribute “http_application_routing_enabled = false” install ´the “addon-http-application-routing-nginx-ingress” on the AKS, the same does the ingress controller.
+  http_application_routing_enabled = false
   kubelet_identity = {
     client_id                 = module.aks_kubelet_m_id.client_id    # null: used if I want to use system-assigned identity
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
@@ -165,6 +166,13 @@ module "aks" {
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
     vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
     scale_down_mode     = "ScaleDownModeDelete"
+
+    # https://learn.microsoft.com/en-us/azure/aks/use-multiple-node-pools
+    node_labels = {
+      costcenter = "ABC000CBA"
+      project    = lower(var.name)
+      stage      = lower(var.stage)
+    }
   }
   linux_profile = {
     admin_username = "azureuser"
@@ -236,11 +244,19 @@ module "aks_pool" {
   vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   enable_auto_scaling   = true
   node_count            = 1
-  min_count             = 0
+  min_count             = 1
   max_count             = 2
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
   scale_down_mode       = "Delete"
+
+  # https://learn.microsoft.com/en-us/azure/aks/use-multiple-node-pools
+  node_labels = {
+    costcenter = "ABC000CBA"
+    project    = lower(var.name)
+    stage      = lower(var.stage)
+  }
+
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
@@ -336,3 +352,13 @@ resource "null_resource" "non_interactive_call" {
     interpreter = ["bash", "-c"]
   }
 }
+
+# resource "null_resource" "install-nginx-ingress-controller" {
+#   depends_on = [module.aks, module.aks_pool]
+#   triggers   = { always_run = timestamp() }
+#   // The order of input values are important for bash
+#   provisioner "local-exec" {
+#     command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
