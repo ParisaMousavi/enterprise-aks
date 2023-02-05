@@ -353,12 +353,12 @@ resource "null_resource" "non_interactive_call" {
   }
 }
 
-# resource "null_resource" "install-nginx-ingress-controller" {
-#   depends_on = [module.aks, module.aks_pool]
-#   triggers   = { always_run = timestamp() }
-#   // The order of input values are important for bash
-#   provisioner "local-exec" {
-#     command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
-#     interpreter = ["bash", "-c"]
-#   }
-# }
+resource "null_resource" "install-nginx-ingress-controller" {
+  depends_on = [module.aks, module.aks_pool]
+  triggers   = { always_run = timestamp() }
+  // The order of input values are important for bash
+  provisioner "local-exec" {
+    command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
+    interpreter = ["bash", "-c"]
+  }
+}
