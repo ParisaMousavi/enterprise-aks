@@ -28,12 +28,16 @@ module "acr_name" {
 
 module "acr" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "github.com/ParisaMousavi/az-acr?ref=2022.10.07"
+  source              = "github.com/ParisaMousavi/az-acr?ref=main"
   resource_group_name = module.resourcegroup.name
   location            = module.resourcegroup.location
   name                = module.acr_name.result
   sku                 = "Premium"
   admin_enabled       = "true"
+  network_config = {
+    virtual_network_id = null #data.terraform_remote_state.network.outputs.network_id
+    subnet_id          = null #data.terraform_remote_state.network.outputs.subnets["acr"].id
+  }
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
@@ -122,7 +126,7 @@ module "aks" {
   oidc_issuer_enabled              = false
   http_application_routing_enabled = true
   kubelet_identity = {
-    client_id                 = module.aks_kubelet_m_id.client_id # null: used if I want to use system-assigned identity
+    client_id                 = module.aks_kubelet_m_id.client_id    # null: used if I want to use system-assigned identity
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
   }
@@ -181,6 +185,8 @@ module "aks" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry#example-usage-attaching-a-container-registry-to-a-kubernetes-cluster
+# https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#create-a-new-aks-cluster-with-acr-integration
 resource "azurerm_role_assignment" "this" {
   principal_id                     = module.aks.principal_id
   role_definition_name             = "AcrPull"
