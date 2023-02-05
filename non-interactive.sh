@@ -16,21 +16,3 @@ kubelogin convert-kubeconfig -l spn --client-id $ARM_CLIENT_ID --client-secret $
 
 kubectl get node
 
-# Azure Kubernetes Service AAD Client
-
-# https://github.com/kubernetes/ingress-nginx/releases/download/helm-chart-4.4.2/ingress-nginx-4.4.2.tgz
-
-# helm push hello-world-0.1.0.tgz oci://$ACR_NAME.azurecr.io/helm
-
-# REGISTRY_NAME=$ACR_NAME
-# SOURCE_REGISTRY=k8s.gcr.io
-# CONTROLLER_IMAGE=ingress-nginx/controller
-# CONTROLLER_TAG=v1.2.1
-# PATCH_IMAGE=ingress-nginx/kube-webhook-certgen
-# PATCH_TAG=v1.1.1
-# DEFAULTBACKEND_IMAGE=defaultbackend-amd64
-# DEFAULTBACKEND_TAG=1.5
-
-# az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$CONTROLLER_IMAGE:$CONTROLLER_TAG --image $CONTROLLER_IMAGE:$CONTROLLER_TAG
-# az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$PATCH_IMAGE:$PATCH_TAG --image $PATCH_IMAGE:$PATCH_TAG
-# az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$DEFAULTBACKEND_IMAGE:$DEFAULTBACKEND_TAG --image $DEFAULTBACKEND_IMAGE:$DEFAULTBACKEND_TAG
