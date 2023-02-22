@@ -19,3 +19,11 @@ output "aks_cluster_resourcegroup_name" {
 output "aks_http_application_routing_zone_name" {
   value = module.aks.http_application_routing_zone_name
 }
+
+# output "ingress_ip_address" {
+#   value = module.pip.ip_address
+# }
+
+output "oidc_issuer_url" {
+  value = module.aks.oidc_issuer_url
+}

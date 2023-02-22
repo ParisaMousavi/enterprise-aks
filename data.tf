@@ -27,3 +27,12 @@ data "azuread_group" "aks_cluster_admin" {
   display_name     = "AKS Cluster Admin"
   security_enabled = true
 }
+
+locals {
+  azure_dns_zone = "parisa-dummy.net"
+}
+
+data "azurerm_dns_zone" "this" {
+  name                = local.azure_dns_zone
+  resource_group_name = "parisa-dummy-net"
+}

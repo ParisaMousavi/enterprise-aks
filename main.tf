@@ -113,6 +113,7 @@ module "aks_ssh" {
   source = "github.com/ParisaMousavi/ssh-key?ref=2022.11.30"
 }
 
+# az aks get-versions --location westeurope --output table
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
   source                  = "github.com/ParisaMousavi/az-aks-v2?ref=main"
@@ -121,9 +122,12 @@ module "aks" {
   location                = module.resourcegroup.location
   name                    = module.aks_name.result
   dns_prefix              = "${var.stage}-${var.prefix}-${var.name}"
-  kubernetes_version      = "1.23.8"
+  kubernetes_version      = "1.25.4"
   private_cluster_enabled = false
-  oidc_issuer_enabled     = false
+
+  # https://learn.microsoft.com/en-us/azure/aks/cluster-configuration
+  oidc_issuer_enabled = true
+
   # This attribute “http_application_routing_enabled = false” install ´the “addon-http-application-routing-nginx-ingress” on the AKS, the same does the ingress controller.
   http_application_routing_enabled = false
   kubelet_identity = {
@@ -134,7 +138,7 @@ module "aks" {
   logging = {
     enabele_diagnostic_setting = true
     enable_oms_agent           = false
-    log_analytics_workspace_id = null #data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
+    log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   }
   identity_ids = [module.aks_cluster_m_id.id] # []: used if I want to use system-assigned identity instead of user-assigned
   aad_config = {
@@ -166,7 +170,7 @@ module "aks" {
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
     vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
     scale_down_mode     = "ScaleDownModeDelete"
-
+    zones               = ["1", "2"]
     # https://learn.microsoft.com/en-us/azure/aks/use-multiple-node-pools
     node_labels = {
       costcenter = "ABC000CBA"
@@ -218,12 +222,25 @@ resource "azurerm_role_assignment" "aks_node_rg" {
   ]
 }
 
+# In my case it's not important to have this role assignment.
+# Because I deploy the pip in the aks node rg.
+# If pip is deployed in a different rg then the cluster identity must the this role in that rg.
+# https://learn.microsoft.com/en-us/azure/aks/static-ip#create-a-service-using-the-static-ip-address
+resource "azurerm_role_assignment" "aks_node_rg_network" {
+  principal_id         = module.aks.principal_id
+  scope                = data.azurerm_resource_group.aks_node_rg.id
+  role_definition_name = "Network Contributor"
+  depends_on = [
+    module.aks
+  ]
+}
+
 #----------------------------------------------------------
 # Based on this document I have noticed that I have to
 # give this role to the Cluster User-Assigned Managed Identity
 # https://learn.microsoft.com/en-us/azure/aks/use-managed-identity#add-role-assignment
 #
-# After this role assignment I could user the kubelet_identity for my AKS
+# After this role assignment I could use the kubelet_identity for my AKS
 #----------------------------------------------------------
 resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
   principal_id                     = module.aks_cluster_m_id.principal_id
@@ -243,8 +260,8 @@ module "aks_pool" {
   kubernetes_cluster_id = module.aks.id
   vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   enable_auto_scaling   = true
-  node_count            = 1
-  min_count             = 1
+  node_count            = 0
+  min_count             = 0
   max_count             = 2
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
@@ -353,12 +370,50 @@ resource "null_resource" "non_interactive_call" {
   }
 }
 
-resource "null_resource" "install-nginx-ingress-controller" {
-  depends_on = [module.aks, module.aks_pool]
-  triggers   = { always_run = timestamp() }
-  // The order of input values are important for bash
-  provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
-    interpreter = ["bash", "-c"]
-  }
-}
+# resource "null_resource" "install-nginx-ingress-controller" {
+#   depends_on = [module.aks, module.aks_pool]
+#   triggers   = { always_run = timestamp() }
+#   // The order of input values are important for bash
+#   provisioner "local-exec" {
+#     command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
+
+# module "pip_name" {
+#   source             = "github.com/ParisaMousavi/az-naming//pip?ref=2022.10.07"
+#   prefix             = var.prefix
+#   name               = var.name
+#   stage              = var.stage
+#   location_shortname = var.location_shortname
+# }
+
+# module "pip" {
+#   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+#   depends_on = [
+#     module.aks
+#   ]
+#   source              = "github.com/ParisaMousavi/az-publicip?ref=main"
+#   resource_group_name = module.aks_node_rg_name.result
+#   location            = module.resourcegroup.location
+#   name                = module.pip_name.result
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+#   ip_version          = "IPv4"
+#   reverse_fqdn        = null
+#   additional_tags = {
+#     CostCenter = "ABC000CBA"
+#     By         = "parisamoosavinezhad@hotmail.com"
+#   }
+# }
+
+# resource "azurerm_dns_a_record" "hello" {
+#   name                = "hello"
+#   zone_name           = data.azurerm_dns_zone.this.name
+#   resource_group_name = data.azurerm_dns_zone.this.resource_group_name
+#   ttl                 = 300
+
+#   # This public IP can be static, therefore I deployed a pip to use it for my ingress controller
+#   # https://learn.microsoft.com/en-us/azure/aks/ingress-tls?tabs=azure-cli#use-a-static-public-ip-address
+#   records = ["20.101.209.47"] #[module.pip.ip_address]
+# }

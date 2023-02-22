@@ -20,10 +20,10 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
 # Basic version
-# helm install ingress-nginx ingress-nginx/ingress-nginx \
-#   --create-namespace \
-#   --namespace $NAMESPACE \
-#   --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --create-namespace \
+  --namespace $NAMESPACE \
+  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
 
 helm install ingress-nginx ingress-nginx/ingress-nginx \
   --create-namespace \
@@ -36,14 +36,24 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
   --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
   -f ./install-nginx-ingress-controller/internal-ingress.yaml    
 
+# Use a static public IP address
+DNS_LABEL="hello.parisa-dummy.net"
+STATIC_IP=13.94.209.21
+
+helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace $NAMESPACE \
+  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNS_LABEL \
+  --set controller.service.loadBalancerIP=$STATIC_IP
+
+
 #-----------------------------------------
 # Check the load balancer service
 #-----------------------------------------
 kubectl get services --namespace $NAMESPACE -o wide -w ingress-nginx-controller
 # Run demo applications : refer to aks-helloworld-one
-# kubectl apply -f aks-helloworld-one.yaml --namespace ingress-basic
-# kubectl apply -f aks-helloworld-two.yaml --namespace ingress-basic
-# kubectl apply -f hello-world-ingress.yaml --namespace ingress-basic
+kubectl apply -f aks-helloworld-one.yaml --namespace ingress-basic
+kubectl apply -f aks-helloworld-two.yaml --namespace ingress-basic
+kubectl apply -f hello-world-ingress.yaml --namespace ingress-basic
 
 #-----------------------------------------
 # Verification
