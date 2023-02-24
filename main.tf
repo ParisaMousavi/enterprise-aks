@@ -1,3 +1,6 @@
+locals {
+  vm_size = "Standard_B2s"
+}
 module "rg_name" {
   source             = "github.com/ParisaMousavi/az-naming//rg?ref=2022.10.07"
   prefix             = var.prefix
@@ -113,6 +116,21 @@ module "aks_ssh" {
   source = "github.com/ParisaMousavi/ssh-key?ref=2022.11.30"
 }
 
+resource "null_resource" "zones" {
+  triggers = { always_run = timestamp() }
+  provisioner "local-exec" {
+    command = "az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
+  }
+}
+
+data "local_file" "zones" {
+  depends_on = [
+    null_resource.zones
+  ]
+  filename = "info.json"
+}
+
+
 # az aks get-versions --location westeurope --output table
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
@@ -168,9 +186,9 @@ module "aks" {
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
-    vm_size             = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
+    vm_size             = local.vm_size #"Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
     scale_down_mode     = "ScaleDownModeDelete"
-    zones               = ["1", "2"]
+    zones               = jsondecode(data.local_file.zones.content).zones #["1", "2"]
     # https://learn.microsoft.com/en-us/azure/aks/use-multiple-node-pools
     node_labels = {
       costcenter = "ABC000CBA"
@@ -258,7 +276,7 @@ module "aks_pool" {
   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=main"
   name                  = "mypool"
   kubernetes_cluster_id = module.aks.id
-  vm_size               = "Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
+  vm_size               = local.vm_size #"Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   enable_auto_scaling   = true
   node_count            = 0
   min_count             = 0
@@ -417,3 +435,5 @@ resource "null_resource" "non_interactive_call" {
 #   # https://learn.microsoft.com/en-us/azure/aks/ingress-tls?tabs=azure-cli#use-a-static-public-ip-address
 #   records = ["20.101.209.47"] #[module.pip.ip_address]
 # }
+
+

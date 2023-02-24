@@ -8,3 +8,5 @@ config
 token.txt
 private_ssh_key
 only-for-me.txt
+rodeo
+info.json
