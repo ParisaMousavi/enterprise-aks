@@ -1,5 +1,7 @@
 locals {
-  vm_size = "Standard_B2s"
+  vm_size                               = "Standard_B2s"
+  with_keyvault_secret_store_csi_driver = false
+  with_workload_identity                = true # this variable enables the related features
 }
 module "rg_name" {
   source             = "github.com/ParisaMousavi/az-naming//rg?ref=2022.10.07"
@@ -89,7 +91,6 @@ module "aks_kubelet_m_id" {
   }
 }
 
-
 #------------------------------------------------
 # AKS with aad enabled
 #------------------------------------------------
@@ -121,6 +122,9 @@ resource "null_resource" "zones" {
   provisioner "local-exec" {
     command = "az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
   }
+  lifecycle {
+    ignore_changes = [triggers]
+  }
 }
 
 data "local_file" "zones" {
@@ -134,21 +138,19 @@ data "local_file" "zones" {
 # az aks get-versions --location westeurope --output table
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source                  = "github.com/ParisaMousavi/az-aks-v2?ref=main"
-  resource_group_name     = module.resourcegroup.name
-  node_resource_group     = module.aks_node_rg_name.result
-  location                = module.resourcegroup.location
-  name                    = module.aks_name.result
-  dns_prefix              = "${var.stage}-${var.prefix}-${var.name}"
-  kubernetes_version      = "1.25.4"
-  private_cluster_enabled = false
-
-  # https://learn.microsoft.com/en-us/azure/aks/cluster-configuration
-  oidc_issuer_enabled = true
-
+  source                    = "github.com/ParisaMousavi/az-aks-v2?ref=main"
+  resource_group_name       = module.resourcegroup.name
+  node_resource_group       = module.aks_node_rg_name.result
+  location                  = module.resourcegroup.location
+  name                      = module.aks_name.result
+  dns_prefix                = "${var.stage}-${var.prefix}-${var.name}"
+  kubernetes_version        = "1.25.4"
+  private_cluster_enabled   = false
+  oidc_issuer_enabled       = local.with_workload_identity # For Azure AD workload identity # https://learn.microsoft.com/en-us/azure/aks/cluster-configuration
+  workload_identity_enabled = local.with_workload_identity
   # This attribute “http_application_routing_enabled = false” install ´the “addon-http-application-routing-nginx-ingress” on the AKS, the same does the ingress controller.
   http_application_routing_enabled = false
-  kubelet_identity = {
+  kubelet_identity = {                                               # will be assigned to VMSS
     client_id                 = module.aks_kubelet_m_id.client_id    # null: used if I want to use system-assigned identity
     object_id                 = module.aks_kubelet_m_id.principal_id # Object (principal) ID
     user_assigned_identity_id = module.aks_kubelet_m_id.id
@@ -208,7 +210,10 @@ module "aks" {
     file_driver_enabled         = true
     snapshot_controller_enabled = true
   }
-
+  key_vault_secrets_provider = { # Secrets Store CSI Driver. A user assigned identity will get created automatically and will be assigned to VMSS.
+    secret_rotation_enabled  = local.with_keyvault_secret_store_csi_driver == true ? true : false
+    secret_rotation_interval = local.with_keyvault_secret_store_csi_driver == true ? "2m" : null
+  }
   additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
@@ -298,15 +303,15 @@ module "aks_pool" {
   }
 }
 
-# #----------------------------------------------------------
-# # Use it to deploy windows user node pool 
-# #----------------------------------------------------------
+#----------------------------------------------------------
+# Use it to deploy windows user node pool 
+#----------------------------------------------------------
 # module "aks_pool_win" {
 #   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
 #   source                = "github.com/ParisaMousavi/az-aks-node-pool?ref=2022.10.24"
 #   name                  = "mypwin"
 #   kubernetes_cluster_id = module.aks.id
-#   vm_size               = "Standard_B2s"
+#   vm_size               = local.vm_size
 #   enable_auto_scaling   = true
 #   node_count            = 1
 #   min_count             = 1
@@ -320,70 +325,27 @@ module "aks_pool" {
 #   }
 # }
 
-
-# module "dns_zone" {
-#   source = ""
-#   dns_zone_name = "privatelink.vaultcore.azure.net"
-# }
-
-# module "keyvault_name" {
-#   source             = "github.com/ParisaMousavi/az-naming//kv?ref=2022.11.30"
-#   prefix             = var.prefix
-#   name               = var.name
-#   stage              = var.stage
-#   location_shortname = var.location_shortname
-# }
-
-# module "keyvault" {
-#   source                        = "github.com/ParisaMousavi/az-key-vault?ref=main"
-#   resource_group_name           = module.resourcegroup.name
-#   location                      = module.resourcegroup.location
-#   name                          = module.keyvault_name.result
-#   tenant_id                     = var.tenant_id
-#   stage                         = var.stage
-#   sku_name                      = "standard"
-#   public_network_access_enabled = true
-#   object_ids                    = [data.azuread_service_principal.deployment_sp.object_id]
-#   private_endpoint_config = {
-#     subnet_id            = null
-#     private_dns_zone_ids = ["value"]
-#   }
-#   additional_tags = {
-#     CostCenter = "ABC000CBA"
-#     By         = "parisamoosavinezhad@hotmail.com"
-#   }
-#   network_acls = {
-#     bypass                     = null
-#     default_action             = "value"
-#     ip_rules                   = ["value"]
-#     virtual_network_subnet_ids = ["value"]
-#   }
-# }
-
-# module "keyvault_key_name" {
-#   source   = "github.com/ParisaMousavi/az-naming//kv-key?ref=main"
-#   prefix   = var.prefix
-#   name     = var.name
-#   stage    = var.stage
-#   assembly = "kms"
-# }
-
-# module "keyvault_key_kms" {
-#   depends_on = [
-#     module.keyvault
-#   ]
-#   source       = "github.com/ParisaMousavi/az-key-vault//key?ref=main"
-#   name         = module.keyvault_key_name.result
-#   key_vault_id = module.keyvault.id
-# }
-
-
 resource "null_resource" "non_interactive_call" {
   depends_on = [module.aks, module.aks_pool]
   triggers   = { always_run = timestamp() }
   // The order of input values are important for bash
   provisioner "local-exec" {
     command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    interpreter = ["bash", "-c"]
+  }
+}
+
+# Reference doc: https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver#verify-the-azure-key-vault-provider-for-secrets-store-csi-driver-installation
+resource "null_resource" "verify_keyvault_provider" {
+  count      = local.with_keyvault_secret_store_csi_driver == true ? 1 : 0
+  depends_on = [null_resource.non_interactive_call]
+  triggers   = { always_run = timestamp() }
+  // The order of input values are important for bash
+  provisioner "local-exec" {
+    environment = {
+      KUBECONFIG = "./config"
+    }
+    command     = "kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver,secrets-store-provider-azure)'"
     interpreter = ["bash", "-c"]
   }
 }
