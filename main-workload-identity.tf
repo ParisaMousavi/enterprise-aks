@@ -2,7 +2,7 @@
 # https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-identity-access
 locals {
   aks_servive_account_name      = "workload-identity-sa"
-  aks_service_account_namespace = "workload-demo"
+  aks_service_account_namespace = "az-aks-workload-identity-sample"
   # for verifying
   # kubectl get serviceaccounts/workload-identity-sa -n workload-demo  -o yaml
 }
@@ -59,4 +59,15 @@ resource "azurerm_federated_identity_credential" "this" {
   issuer              = module.aks.oidc_issuer_url
   parent_id           = module.aks_workload_m_id[0].id
   subject             = "system:serviceaccount:${local.aks_service_account_namespace}:${local.aks_servive_account_name}"
+}
+
+
+# Pass the namespace to github to deploy workload identity demo via GitHub action.
+resource "github_actions_secret" "Workload_Identity_Sample_Namespace" {
+  depends_on = [
+    azurerm_federated_identity_credential.this
+  ]
+  repository       = local.repository 
+  secret_name      = "Workload_Identity_Sample_Namespace"
+  plaintext_value  = local.aks_service_account_namespace
 }
