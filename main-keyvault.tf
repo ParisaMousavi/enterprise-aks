@@ -46,10 +46,6 @@ resource "azurerm_private_dns_zone" "this" {
   }
 }
 
-data "external" "myipaddr" {
-  program = ["bash", "-c", "curl -s 'https://api.ipify.org?format=json'"]
-}
-
 module "keyvault" {
   depends_on = [
     module.aks,

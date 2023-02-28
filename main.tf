@@ -2,7 +2,9 @@ locals {
   vm_size                               = "Standard_B2s"
   with_keyvault_secret_store_csi_driver = false
   with_workload_identity                = true # this variable enables the related features
+  with_customized_lb                    = true
 }
+
 module "rg_name" {
   source             = "github.com/ParisaMousavi/az-naming//rg?ref=2022.10.07"
   prefix             = var.prefix
@@ -18,32 +20,6 @@ module "resourcegroup" {
   location = var.location
   name     = module.rg_name.result
   tags = {
-    CostCenter = "ABC000CBA"
-    By         = "parisamoosavinezhad@hotmail.com"
-  }
-}
-
-module "acr_name" {
-  source             = "github.com/ParisaMousavi/az-naming//acr?ref=2022.10.07"
-  prefix             = var.prefix
-  name               = var.name
-  stage              = var.stage
-  location_shortname = var.location_shortname
-}
-
-module "acr" {
-  # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-  source              = "github.com/ParisaMousavi/az-acr?ref=main"
-  resource_group_name = module.resourcegroup.name
-  location            = module.resourcegroup.location
-  name                = module.acr_name.result
-  sku                 = "Premium"
-  admin_enabled       = "true"
-  network_config = {
-    virtual_network_id = null #data.terraform_remote_state.network.outputs.network_id
-    subnet_id          = null #data.terraform_remote_state.network.outputs.subnets["acr"].id
-  }
-  additional_tags = {
     CostCenter = "ABC000CBA"
     By         = "parisamoosavinezhad@hotmail.com"
   }
@@ -359,33 +335,6 @@ resource "null_resource" "verify_keyvault_provider" {
 #   provisioner "local-exec" {
 #     command     = "chmod +x ${path.module}/install-nginx-ingress-controller/script.sh ;${path.module}/install-nginx-ingress-controller/script.sh  ${module.resourcegroup.name} ${module.aks_name.result}"
 #     interpreter = ["bash", "-c"]
-#   }
-# }
-
-# module "pip_name" {
-#   source             = "github.com/ParisaMousavi/az-naming//pip?ref=2022.10.07"
-#   prefix             = var.prefix
-#   name               = var.name
-#   stage              = var.stage
-#   location_shortname = var.location_shortname
-# }
-
-# module "pip" {
-#   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
-#   depends_on = [
-#     module.aks
-#   ]
-#   source              = "github.com/ParisaMousavi/az-publicip?ref=main"
-#   resource_group_name = module.aks_node_rg_name.result
-#   location            = module.resourcegroup.location
-#   name                = module.pip_name.result
-#   allocation_method   = "Static"
-#   sku                 = "Standard"
-#   ip_version          = "IPv4"
-#   reverse_fqdn        = null
-#   additional_tags = {
-#     CostCenter = "ABC000CBA"
-#     By         = "parisamoosavinezhad@hotmail.com"
 #   }
 # }
 

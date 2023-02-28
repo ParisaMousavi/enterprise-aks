@@ -36,3 +36,7 @@ data "azurerm_dns_zone" "this" {
   name                = local.azure_dns_zone
   resource_group_name = "parisa-dummy-net"
 }
+
+data "external" "myipaddr" {
+  program = ["bash", "-c", "curl -s 'https://api.ipify.org?format=json'"]
+}
