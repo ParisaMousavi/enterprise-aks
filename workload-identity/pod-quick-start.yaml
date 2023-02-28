@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quick-start
+  namespace: workload-demo
+  labels:
+    azure.workload.identity/use: "true"
+spec:
+  serviceAccountName: workload-identity-sa
+  containers:
+    - image: ghcr.io/azure/azure-workload-identity/msal-go
+      name: oidc
+      env:
+        - name: KEYVAULT_URL
+          value: https://proja-kv-app-dev-1-weu.vault.azure.net/
+        - name: SECRET_NAME
+          value: secret-sauce
+  nodeSelector:
+    kubernetes.io/os: linux
