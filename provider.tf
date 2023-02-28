@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/azuread"
       version = "2.29.0"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 5.0"
+    }
   }
 
   backend "azurerm" {
@@ -32,4 +36,8 @@ provider "azurerm" {
 
 provider "azuread" {
   # Configuration options
+}
+
+provider "github" {
+  # token = var.token # or `GITHUB_TOKEN`
 }
