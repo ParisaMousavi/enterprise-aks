@@ -14,5 +14,8 @@ az aks get-credentials --overwrite-existing --resource-group "$resourcegroupname
 
 kubelogin convert-kubeconfig -l spn --client-id $ARM_CLIENT_ID --client-secret $ARM_CLIENT_SECRET
 
+# Azure CNI provides the capability to monitor IP subnet usage. https://learn.microsoft.com/en-us/azure/aks/configure-azure-cni#apply-the-config
+kubectl apply -f https://raw.githubusercontent.com/microsoft/Docker-Provider/ci_prod/kubernetes/container-azm-ms-agentconfig.yaml
+
 kubectl get node
 

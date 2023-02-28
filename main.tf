@@ -157,7 +157,7 @@ module "aks" {
   }
   logging = {
     enabele_diagnostic_setting = true
-    enable_oms_agent           = false
+    enable_oms_agent           = true
     log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   }
   identity_ids = [module.aks_cluster_m_id.id] # []: used if I want to use system-assigned identity instead of user-assigned
@@ -167,7 +167,7 @@ module "aks" {
     azure_rbac_enabled     = false
     tenant_id              = var.tenant_id
   }
-  network_profile = {
+  network_profile = { # first IP is resrved for -> kubernetes.default.svc.cluster.local 
     network_plugin     = "azure"
     network_policy     = "azure"
     docker_bridge_cidr = "10.50.0.1/18"
@@ -236,6 +236,8 @@ data "azurerm_resource_group" "aks_node_rg" {
   ]
 }
 
+# Cluster identity should have this permission
+# https://learn.microsoft.com/en-us/azure/aks/use-byo-cni?tabs=azure-cli#prerequisites
 resource "azurerm_role_assignment" "aks_node_rg" {
   principal_id         = module.aks.principal_id
   scope                = data.azurerm_resource_group.aks_node_rg.id
@@ -283,9 +285,9 @@ module "aks_pool" {
   kubernetes_cluster_id = module.aks.id
   vm_size               = local.vm_size #"Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   enable_auto_scaling   = true
-  node_count            = 0
-  min_count             = 0
-  max_count             = 2
+  node_count            = 1
+  min_count             = 1
+  max_count             = 1
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
   scale_down_mode       = "Delete"
