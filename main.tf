@@ -2,7 +2,8 @@ locals {
   vm_size                               = "Standard_B2s"
   with_keyvault_secret_store_csi_driver = false
   with_workload_identity                = true # this variable enables the related features
-  with_customized_lb                    = true
+  with_customized_lb                    = false
+  with_monitoring                       = true
 }
 
 module "rg_name" {
@@ -110,7 +111,6 @@ data "local_file" "zones" {
   filename = "info.json"
 }
 
-
 # az aks get-versions --location westeurope --output table
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
@@ -133,14 +133,14 @@ module "aks" {
   }
   logging = {
     enabele_diagnostic_setting = true
-    enable_oms_agent           = true
+    enable_oms_agent           = local.with_monitoring
     log_analytics_workspace_id = data.terraform_remote_state.monitoring.outputs.log_analytics_workspace_id
   }
   identity_ids = [module.aks_cluster_m_id.id] # []: used if I want to use system-assigned identity instead of user-assigned
   aad_config = {
     managed                = true
     admin_group_object_ids = [data.azuread_group.aks_cluster_admin.id]
-    azure_rbac_enabled     = false
+    azure_rbac_enabled     = true
     tenant_id              = var.tenant_id
   }
   network_profile = { # first IP is resrved for -> kubernetes.default.svc.cluster.local 
@@ -196,6 +196,13 @@ module "aks" {
   }
 }
 
+resource "azurerm_role_assignment" "rbac_aks_cluster_admin" {
+  principal_id                     = data.azuread_group.aks_cluster_admin.object_id
+  role_definition_name             = "Azure Kubernetes Service RBAC Cluster Admin"
+  scope                            = module.aks.id
+}
+
+# Allow access to ACR
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry#example-usage-attaching-a-container-registry-to-a-kubernetes-cluster
 # https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#create-a-new-aks-cluster-with-acr-integration
 resource "azurerm_role_assignment" "this" {
@@ -205,6 +212,23 @@ resource "azurerm_role_assignment" "this" {
   skip_service_principal_aad_check = true
 }
 
+# Allow publish logs
+# resource "azurerm_role_assignment" "monpublisher" {
+#   count                = local.with_monitoring == true ? 1 : 0
+#   scope                = module.aks.id
+#   role_definition_name = "Monitoring Metrics Publisher"
+#   principal_id         = module.aks.oms_agent_identity.object_id
+# }
+
+# resource "null_resource" "waitaks0" {
+#   depends_on = [azurerm_role_assignment.monpublisher]
+#   provisioner "local-exec" {
+#     command = "sleep 6000"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
+
+# Get node resource group
 data "azurerm_resource_group" "aks_node_rg" {
   name = module.aks_node_rg_name.result
   depends_on = [
@@ -250,6 +274,12 @@ resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
   skip_service_principal_aad_check = true
 }
 
+# MSYS_NO_PATHCONV=1 az k8s-extension create --name azuremonitor-containers \
+# --cluster-name "proja-aks-app-dev-aad-weu" \
+# --resource-group "proja-rg-app-dev-aks-w-aad-weu" \
+# --cluster-type managedClusters \
+# --extension-type Microsoft.AzureMonitor.Containers \
+# --configuration-settings "logAnalyticsWorkspaceResourceID=/subscriptions/e75710b2-d656-4ee7-bc64-d1b371656208/resourceGroups/projn-rg-monitoring-dev-monitoring-weu/providers/Microsoft.OperationalInsights/workspaces/projn-log-monitoring-dev-weu"
 
 #----------------------------------------------------------
 # Use it to deploy linux user node pool 
@@ -313,6 +343,16 @@ resource "null_resource" "non_interactive_call" {
   }
 }
 
+resource "null_resource" "aks_monitoring" {
+  depends_on = [module.aks, module.aks_pool]
+  triggers   = { always_run = timestamp() }
+  // The order of input values are important for bash
+  provisioner "local-exec" {
+    command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
+    interpreter = ["bash", "-c"]
+  }
+}
+
 # Reference doc: https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver#verify-the-azure-key-vault-provider-for-secrets-store-csi-driver-installation
 resource "null_resource" "verify_keyvault_provider" {
   count      = local.with_keyvault_secret_store_csi_driver == true ? 1 : 0
@@ -337,16 +377,4 @@ resource "null_resource" "verify_keyvault_provider" {
 #     interpreter = ["bash", "-c"]
 #   }
 # }
-
-# resource "azurerm_dns_a_record" "hello" {
-#   name                = "hello"
-#   zone_name           = data.azurerm_dns_zone.this.name
-#   resource_group_name = data.azurerm_dns_zone.this.resource_group_name
-#   ttl                 = 300
-
-#   # This public IP can be static, therefore I deployed a pip to use it for my ingress controller
-#   # https://learn.microsoft.com/en-us/azure/aks/ingress-tls?tabs=azure-cli#use-a-static-public-ip-address
-#   records = ["20.101.209.47"] #[module.pip.ip_address]
-# }
-
 

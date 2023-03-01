@@ -6,6 +6,7 @@ module "acr_name" {
   location_shortname = var.location_shortname
 }
 
+# private link: https://learn.microsoft.com/en-us/azure/container-registry/container-registry-private-link
 module "acr" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
   source                        = "github.com/ParisaMousavi/az-acr?ref=main"
@@ -29,3 +30,7 @@ module "acr" {
     By         = "parisamoosavinezhad@hotmail.com"
   }
 }
+
+# az acr import  -n projacrappdevweu --source docker.io/library/nginx:latest --image nginx:v1
+
+# az acr import  -n projacrappdevweu --source mcr.microsoft.com/azuredocs/aks-helloworld:v1 --image aks-helloworld:v1

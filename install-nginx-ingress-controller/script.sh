@@ -25,27 +25,6 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
   --namespace $NAMESPACE \
   --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
 
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --create-namespace \
-  --namespace $NAMESPACE \
-  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
-  --version 4.1.3 \
-  --set controller.replicaCount=2 \
-  --set controller.nodeSelector."kubernetes\.io/os"=linux \
-  --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/os"=linux \
-  --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
-  -f ./install-nginx-ingress-controller/internal-ingress.yaml    
-
-# Use a static public IP address
-DNS_LABEL="hello.parisa-dummy.net"
-STATIC_IP=13.94.209.21
-
-helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace $NAMESPACE \
-  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNS_LABEL \
-  --set controller.service.loadBalancerIP=$STATIC_IP
-
-
 #-----------------------------------------
 # Check the load balancer service
 #-----------------------------------------

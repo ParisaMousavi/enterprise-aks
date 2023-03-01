@@ -28,13 +28,13 @@ module "pip_lb" {
   }
 }
 
-output "loadBalancerIP" {
-  value = module.pip_lb[0].id
-}
+# output "loadBalancerIP" {
+#   value = module.pip_lb[0].id
+# }
 
-output "NodeResourcegroupName" {
-  value = module.aks_node_rg_name.result
-}
+# output "NodeResourcegroupName" {
+#   value = module.aks_node_rg_name.result
+# }
 
 # resource "null_resource" "azure_load_balancer" {
 #   count      = local.with_customized_lb == true ? 1 : 0
