@@ -36,20 +36,9 @@ module "keyvault_name" {
   location_shortname = var.location_shortname
 }
 
-# https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration
-resource "azurerm_private_dns_zone" "this" {
-  name                = "privatelink.vaultcore.azure.net"
-  resource_group_name = module.resourcegroup.name
-  tags = {
-    CostCenter = "ABC000CBA"
-    By         = "parisamoosavinezhad@hotmail.com"
-  }
-}
-
 module "keyvault" {
   depends_on = [
-    module.aks,
-    azurerm_private_dns_zone.this
+    module.aks
   ]
   source                          = "github.com/ParisaMousavi/az-key-vault?ref=main"
   resource_group_name             = module.resourcegroup.name
@@ -65,10 +54,8 @@ module "keyvault" {
   enable_rbac_authorization       = false
   object_ids                      = [data.azuread_group.aks_cluster_admin.object_id] # module.aks.principal_id
   private_endpoint_config = {
-    subnet_id             = data.terraform_remote_state.network.outputs.subnets["key-vault"].id
-    virtual_network_id    = data.terraform_remote_state.network.outputs.network_id
-    private_dns_zone_id   = azurerm_private_dns_zone.this.id
-    private_dns_zone_name = azurerm_private_dns_zone.this.name
+    subnet_id           = data.terraform_remote_state.network.outputs.subnets["key-vault"].id
+    private_dns_zone_id = data.terraform_remote_state.network.outputs.privatelink_vaultcore_azure_net.id
   }
   additional_tags = {
     CostCenter = "ABC000CBA"

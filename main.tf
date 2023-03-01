@@ -157,8 +157,8 @@ module "aks" {
   default_node_pool = {
     enable_auto_scaling = true
     node_count          = 1
-    max_count           = 3
     min_count           = 1
+    max_count           = 3
     max_pods            = 30
     name                = "default"
     os_sku              = "Ubuntu"
@@ -261,9 +261,9 @@ module "aks_pool" {
   kubernetes_cluster_id = module.aks.id
   vm_size               = local.vm_size #"Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
   enable_auto_scaling   = true
-  node_count            = 1
-  min_count             = 1
-  max_count             = 1
+  node_count            = 0
+  min_count             = 0
+  max_count             = 2
   vnet_subnet_id        = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
   zones                 = []
   scale_down_mode       = "Delete"
