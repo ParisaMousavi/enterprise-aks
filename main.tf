@@ -158,7 +158,7 @@ module "aks" {
     enable_auto_scaling = true
     node_count          = 1
     min_count           = 1
-    max_count           = 3
+    max_count           = 5
     max_pods            = 30
     name                = "default"
     os_sku              = "Ubuntu"
@@ -378,3 +378,4 @@ resource "null_resource" "verify_keyvault_provider" {
 #   }
 # }
 
+# Chaos steps: https://learn.microsoft.com/en-us/azure/chaos-studio/chaos-studio-tutorial-aks-portal
