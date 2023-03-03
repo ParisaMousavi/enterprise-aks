@@ -35,7 +35,7 @@ resource "null_resource" "create_service_account" {
   depends_on = [
     module.aks,
     module.aks_pool,
-    # null_resource.non_interactive_call
+    null_resource.non_interactive_call
   ]
   triggers = { always_run = timestamp() }
   provisioner "local-exec" {
