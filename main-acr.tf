@@ -21,7 +21,7 @@ module "acr" {
     private_dns_zone_id = data.terraform_remote_state.network.outputs.privatelink_azurecr_io.id
   }
   network_rule_set = {
-    allow_ip_ranges  = [data.external.myipaddr.result.ip] # use case: for development
+    allow_ip_ranges  = concat(["${data.external.myipaddr.result.ip}/32"], local.devops_agent_ips) # use case: for development
     allow_subnet_ids = []
     default_action   = "Deny"
   }

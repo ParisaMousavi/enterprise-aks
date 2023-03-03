@@ -64,7 +64,7 @@ module "keyvault" {
   network_acls = {
     bypass                     = "AzureServices"
     default_action             = "Deny"
-    ip_rules                   = [data.external.myipaddr.result.ip] # e.g. 95.117.53.15
+    ip_rules                   = concat([data.external.myipaddr.result.ip], local.devops_agent_ips) # e.g. 95.117.53.15
     virtual_network_subnet_ids = []
   }
 }
