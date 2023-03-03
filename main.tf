@@ -200,9 +200,9 @@ module "aks" {
 }
 
 resource "azurerm_role_assignment" "rbac_aks_cluster_admin" {
-  principal_id                     = data.azuread_group.aks_cluster_admin.object_id
-  role_definition_name             = "Azure Kubernetes Service RBAC Cluster Admin"
-  scope                            = module.aks.id
+  principal_id         = data.azuread_group.aks_cluster_admin.object_id
+  role_definition_name = "Azure Kubernetes Service RBAC Cluster Admin"
+  scope                = module.aks.id
 }
 
 # Allow access to ACR
@@ -347,19 +347,21 @@ module "aks_pool" {
 # }
 
 # Reference doc: https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver#verify-the-azure-key-vault-provider-for-secrets-store-csi-driver-installation
-resource "null_resource" "verify_keyvault_provider" {
-  count      = local.with_keyvault_secret_store_csi_driver == true ? 1 : 0
-  depends_on = [null_resource.non_interactive_call]
-  triggers   = { always_run = timestamp() }
-  // The order of input values are important for bash
-  provisioner "local-exec" {
-    environment = {
-      KUBECONFIG = "./config"
-    }
-    command     = "kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver,secrets-store-provider-azure)'"
-    interpreter = ["bash", "-c"]
-  }
-}
+# resource "null_resource" "verify_keyvault_provider" {
+#   count = local.with_keyvault_secret_store_csi_driver == true ? 1 : 0
+#   depends_on = [
+#     null_resource.non_interactive_call
+#   ]
+#   triggers = { always_run = timestamp() }
+#   // The order of input values are important for bash
+#   provisioner "local-exec" {
+#     environment = {
+#       KUBECONFIG = "./config"
+#     }
+#     command     = "kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver,secrets-store-provider-azure)'"
+#     interpreter = ["bash", "-c"]
+#   }
+# }
 
 # resource "null_resource" "install-nginx-ingress-controller" {
 #   depends_on = [module.aks, module.aks_pool]

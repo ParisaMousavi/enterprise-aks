@@ -31,9 +31,13 @@ module "aks_workload_m_id" {
 }
 
 resource "null_resource" "create_service_account" {
-  count      = local.with_workload_identity == true ? 1 : 0
-  depends_on = [module.aks, module.aks_pool, null_resource.non_interactive_call]
-  triggers   = { always_run = timestamp() }
+  count = local.with_workload_identity == true ? 1 : 0
+  depends_on = [
+    module.aks,
+    module.aks_pool,
+    # null_resource.non_interactive_call
+  ]
+  triggers = { always_run = timestamp() }
   provisioner "local-exec" {
     command     = "chmod +x ${path.module}/workload-identity/create_service_account.sh; ${path.module}/workload-identity/create_service_account.sh "
     interpreter = ["bash", "-c"]

@@ -109,7 +109,7 @@ resource "null_resource" "arc-extension-monitor" {
   depends_on = [
     module.aks,
     module.aks_pool,
-    null_resource.non_interactive_call,
+    # null_resource.non_interactive_call,
     null_resource.arc-connection
   ]
   count = var.install_arc_monitor == false ? 0 : 1
