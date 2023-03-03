@@ -166,7 +166,7 @@ module "aks" {
     vnet_subnet_id      = data.terraform_remote_state.network.outputs.subnets["aad-aks"].id
     vm_size             = local.vm_size #"Standard_B2s" # "Standard_B4ms" #  I use Standard_B2s size for my videos
     scale_down_mode     = "ScaleDownModeDelete"
-    zones               = jsondecode(data.local_file.zones.content).zones #["1", "2"]
+    zones               = [] # jsondecode(data.local_file.zones.content).zones #["1", "2"]
     # https://learn.microsoft.com/en-us/azure/aks/use-multiple-node-pools
     node_labels = {
       costcenter = "ABC000CBA"
