@@ -97,7 +97,7 @@ module "aks_ssh" {
 resource "null_resource" "zones" {
   triggers = { always_run = timestamp() }
   provisioner "local-exec" {
-    command = "az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
+    command = "az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID; az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
   }
   lifecycle {
     ignore_changes = [triggers]
