@@ -94,22 +94,22 @@ module "aks_ssh" {
   source = "github.com/ParisaMousavi/ssh-key?ref=2022.11.30"
 }
 
-resource "null_resource" "zones" {
-  triggers = { always_run = timestamp() }
-  provisioner "local-exec" {
-    command = "az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID; az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
-  }
-  lifecycle {
-    ignore_changes = [triggers]
-  }
-}
+# resource "null_resource" "zones" {
+#   triggers = { always_run = timestamp() }
+#   provisioner "local-exec" {
+#     command = "az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID; az vm list-skus --location ${var.location} --size ${local.vm_size} --query {zones:[0].locationInfo[0].zones} > info.json"
+#   }
+#   lifecycle {
+#     ignore_changes = [triggers]
+#   }
+# }
 
-data "local_file" "zones" {
-  depends_on = [
-    null_resource.zones
-  ]
-  filename = "info.json"
-}
+# data "local_file" "zones" {
+#   depends_on = [
+#     null_resource.zones
+#   ]
+#   filename = "info.json"
+# }
 
 # az aks get-versions --location westeurope --output table
 module "aks" {
