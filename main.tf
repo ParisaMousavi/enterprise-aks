@@ -343,16 +343,6 @@ resource "null_resource" "non_interactive_call" {
   }
 }
 
-resource "null_resource" "aks_monitoring" {
-  depends_on = [module.aks, module.aks_pool]
-  triggers   = { always_run = timestamp() }
-  // The order of input values are important for bash
-  provisioner "local-exec" {
-    command     = "chmod +x ${path.module}/non-interactive.sh ;${path.module}/non-interactive.sh ${module.resourcegroup.name} ${module.aks_name.result}"
-    interpreter = ["bash", "-c"]
-  }
-}
-
 # Reference doc: https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver#verify-the-azure-key-vault-provider-for-secrets-store-csi-driver-installation
 resource "null_resource" "verify_keyvault_provider" {
   count      = local.with_keyvault_secret_store_csi_driver == true ? 1 : 0
