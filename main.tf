@@ -114,6 +114,9 @@ module "aks_ssh" {
 # az aks get-versions --location westeurope --output table
 module "aks" {
   # https://{PAT}@dev.azure.com/{organization}/{project}/_git/{repo-name}
+  depends_on = [
+    azurerm_role_assignment.aks_cluster_m_id_mio_on_cluster_rg
+  ]
   source                    = "github.com/ParisaMousavi/az-aks-v2?ref=main"
   resource_group_name       = module.resourcegroup.name
   node_resource_group       = module.aks_node_rg_name.result
@@ -270,7 +273,7 @@ resource "azurerm_role_assignment" "aks_node_rg_network" {
 resource "azurerm_role_assignment" "aks_cluster_m_id_mio_on_cluster_rg" {
   principal_id                     = module.aks_cluster_m_id.principal_id
   role_definition_name             = "Managed Identity Operator"
-  scope                            = module.resourcegroup.id
+  scope                            = module.aks_kubelet_m_id.id
   skip_service_principal_aad_check = true
 }
 
