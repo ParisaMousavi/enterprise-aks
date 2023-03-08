@@ -1,5 +1,5 @@
 locals {
-  vm_size                               = "Standard_B2s"
+  vm_size                               = var.vm_size == null ? "Standard_B2s" : var.vm_size
   with_keyvault_secret_store_csi_driver = false
   with_workload_identity                = true # this variable enables the related features
   with_customized_lb                    = false

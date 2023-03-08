@@ -46,3 +46,8 @@ variable "remote_state_resource_group_name" {
   type    = string
   default = "tfstate"
 }
+
+variable "vm_size" {
+  type    = string
+  default = null
+}
