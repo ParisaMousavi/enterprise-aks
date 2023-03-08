@@ -64,5 +64,5 @@ EOF
 
 # 4
 TOKEN=$(kubectl get secret arc-ui-user-secret -o jsonpath='{$.data.token}' | base64 -d | sed 's/$/\n/g')
-
+echo $TOKEN
 echo $TOKEN > token.txt

@@ -18,7 +18,6 @@ echo ""
 
 echo "Make config with Log Analytics Workspace ID"
 echo "--------------------------------------------"
-# logAnalyticsWorkspaceResourceID=$(az monitor log-analytics workspace show --resource-group projn-rg-monitoring-dev-weu --workspace-name projn-log-monitoring-dev-weu --query id -o tsv)
 logAnalyticsWorkspaceResourceID="logAnalyticsWorkspaceResourceID="$logAnalyticsWorkspaceResourceID
 echo $logAnalyticsWorkspaceResourceID
 

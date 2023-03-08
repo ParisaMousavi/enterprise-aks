@@ -3,7 +3,7 @@ locals {
   with_keyvault_secret_store_csi_driver = false
   with_workload_identity                = true # this variable enables the related features
   with_customized_lb                    = false
-  with_monitoring                       = true
+  with_monitoring                       = false
 }
 
 module "rg_name" {
